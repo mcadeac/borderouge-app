@@ -45,8 +45,7 @@
   .tl .now { position:absolute; top:-4px; bottom:-4px; width:2px; background:#137a37; }
   .axe { display:grid; grid-template-columns:minmax(120px,1.1fr) minmax(110px,.9fr) 2fr; gap:12px; padding:4px 14px 0; font-size:12px; color:#5c5c5c; }
   .axe div:last-child { display:flex; justify-content:space-between; }
-  .abs { background:#fff; border-radius:12px; padding:12px 16px; margin-top:18px; font-size:15px; }
-  .abs b { font-family:Oswald, sans-serif; text-transform:uppercase; letter-spacing:.5px; margin-right:6px; }
+  .tl span b { position:absolute; left:50%; top:50%; transform:translate(-50%,-52%); color:#fff; font:900 15px/1 Roboto, sans-serif; letter-spacing:-1px; }
   .vide, .err { background:#fff; border-radius:12px; padding:22px; margin-top:18px; text-align:center; color:#5c5c5c; }
   .err { color:var(--red); }
   .maj { font-size:13px; color:#5c5c5c; margin-top:18px; text-align:center; }
@@ -97,7 +96,7 @@
     ln.append(el('div', 'n', r.nom));
     var h = el('div', 'h'); if (syn) h.append(el('i', '', 'Synergy')); h.append(hTxt(r.h)); ln.append(h);
     var tl = el('div', 'tl');
-    S.forEach(function (s) { var sp = el('span', r.type === 'enca' ? 'e' : syn ? 's' : ''); var x0 = Math.max(0, (s[0] - T0) / (T1 - T0)), x1 = Math.min(1, (s[1] - T0) / (T1 - T0)); sp.style.left = (x0 * 100) + '%'; sp.style.width = (Math.max(.01, x1 - x0) * 100) + '%'; tl.append(sp); });
+    S.forEach(function (s) { var sp = el('span', r.type === 'enca' ? 'e' : syn ? 's' : ''); var x0 = Math.max(0, (s[0] - T0) / (T1 - T0)), x1 = Math.min(1, (s[1] - T0) / (T1 - T0)); sp.style.left = (x0 * 100) + '%'; sp.style.width = (Math.max(.01, x1 - x0) * 100) + '%'; if (r.type !== 'enca' && s[1] - s[0] > 300) { sp.append(el('b', '', '//')); sp.title = 'Pause de 30 min (shift de plus de 5 h)'; } tl.append(sp); });
     if (isT && nm >= T0 && nm <= T1) { var n = el('i', 'now'); n.style.left = ((nm - T0) / (T1 - T0) * 100) + '%'; tl.append(n); }
     ln.append(tl);
     return { ln: ln, pres: pres };
@@ -119,7 +118,6 @@
     var J = D.rows.filter(function (r) { return r.date === SEL; });
     var trav = J.filter(function (r) { return r.statut === 'travail' || r.statut === 'Synergy'; }).sort(function (a, b) { var x = segs(a.h)[0], y = segs(b.h)[0]; return (x ? x[0] : 9999) - (y ? y[0] : 9999) || a.nom.localeCompare(b.nom); });
     var E = trav.filter(function (r) { return r.type === 'enca'; }), S = trav.filter(function (r) { return r.type !== 'enca'; });
-    var abs = J.filter(function (r) { return r.statut !== 'travail' && r.statut !== 'Synergy'; });
     if (!trav.length) { main.append(el('div', 'vide', D.rows.length ? 'Pas de planning pour ce jour.' : "Le planning n'a pas encore été envoyé par le TDB.")); }
     else {
       var open = E.filter(function (r) { var s = segs(r.h)[0]; return s && s[0] <= 8 * 60; }), close = E.filter(function (r) { var s = segs(r.h); return s.length && s[s.length - 1][1] >= 24 * 60; });
@@ -132,8 +130,7 @@
       var np = groupe(main, 'Encadrants', E, isT, nm) + groupe(main, 'Équipiers', S, isT, nm);
       if (isT) c2.firstChild.textContent = np;
     }
-    if (abs.length) { var a = el('div', 'abs'); a.append(el('b', '', 'Absents prévus'), abs.map(function (r) { return r.nom + ' (' + r.statut + ')'; }).join(' · ')); main.append(a); }
-    main.append(el('div', 'maj', D.maj ? 'Planning envoyé par le TDB le ' + D.maj + (isT ? ' · les personnes pas sur le terrain à cette heure sont grisées' : '') : ''));
+    main.append(el('div', 'maj', D.maj ? 'Planning envoyé par le TDB le ' + D.maj + (isT ? ' · les personnes pas sur le terrain à cette heure sont grisées' : '') + ' · // = pause à prendre (shift de plus de 5 h)' : ''));
   }
 
   function afficher(d) { D = d || { rows: [] }; onglets(); rendre(); }

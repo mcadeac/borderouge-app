@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Borderouge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e4002b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Borderouge">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="app.css">
+<style>
+  :root { --red:#e4002b; --ink:#111114; --mut:#55555c; --pg:#f6f4f1; --sh:0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.07); }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font:17px/1.4 -apple-system, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif; color:var(--ink); background:var(--pg); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  header { background:#fff; display:flex; align-items:center; gap:16px; padding:14px 22px; }
+  header img { width:62px; }
+  header b { font-size:28px; font-weight:900; letter-spacing:-.5px; display:block; }
+  header span { color:var(--mut); font-size:14px; font-weight:600; }
+  .stripes { height:12px; background:repeating-linear-gradient(90deg, var(--red) 0 22px, #fff 22px 34px); }
+  main { max-width:900px; margin:0 auto; padding:26px 18px 60px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
+  .tile { display:flex; flex-direction:column; gap:8px; background:#fff; border-radius:20px; padding:24px 22px; box-shadow:var(--sh); text-decoration:none; color:inherit; border-top:8px solid var(--red); min-height:170px; }
+  .tile:active { transform:scale(.98); }
+  .tile b { font-size:26px; font-weight:900; }
+  .tile span { color:var(--mut); font-size:16px; }
+  .tile i { margin-top:auto; font-style:normal; font-weight:800; color:var(--red); }
+  .tile.k { border-top-color:var(--ink); } .tile.k i { color:var(--ink); }
+  .foot { margin-top:26px; color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
+</style>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="KFC">
+  <div><b>Borderouge</b><span>KFC Toulouse Borderouge · outils de l'équipe</span></div>
+</header>
+<div class="stripes"></div>
+<main>
+  <div class="tiles">
+    <a class="tile" href="formation.html"><b>Formation</b><span>CLO sur tablette, QCM HSA / Service / Pack / Prod, suivi des certifications</span><i>Ouvrir ›</i></a>
+    <a class="tile k" href="smep.html"><b>SMEP</b><span>Maintenance et entretien préventif : tâches de la semaine, du mois, points non OK, calendrier imprimable</span><i>Ouvrir ›</i></a>
+  </div>
+  <div class="foot">
+    <span>Astuce : ajoute cette page à l'écran d'accueil de la tablette (Partager › « Sur l'écran d'accueil ») pour l'ouvrir comme une application.</span>
+    <button type="button" id="oubli">Changer le code restaurant</button>
+  </div>
+</main>
+<script>
+document.getElementById('oubli').onclick = function () { BR.oublierCode(); alert('Le code sera redemandé à la prochaine ouverture de Formation ou SMEP.'); };
+</script>
+</body>
+</html>

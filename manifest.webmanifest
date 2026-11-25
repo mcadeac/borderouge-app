@@ -1,0 +1,15 @@
+{
+  "name": "Borderouge — KFC Toulouse Borderouge",
+  "short_name": "Borderouge",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f4f1",
+  "theme_color": "#e4002b",
+  "lang": "fr",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

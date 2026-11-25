@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Planning · Borderouge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e4002b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Borderouge">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="app.css?v=202611252130">
+<script src="config.js?v=202611252130"></script>
+<script src="app.js?v=202611252130"></script>
+<style>
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font:17px/1.4 Roboto, -apple-system, "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+  header { display:flex; align-items:center; }
+  header .tt { display:flex; flex-direction:column; line-height:1.15; flex:1; }
+  header .dt { display:flex; flex-direction:column; align-items:flex-end; line-height:1.2; }
+  .tabs { position:sticky; top:0; z-index:5; overflow-x:auto; }
+  .tabs .seg { display:flex; }
+  .tabs button { white-space:nowrap; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:4px 16px 50px; }
+  .res { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 4px; }
+  .res div { background:#fff; border-radius:14px; padding:10px 16px; flex:1; min-width:130px; }
+  .res b { display:block; font-family:Oswald, sans-serif; font-weight:700; font-size:34px; line-height:1; }
+  .res span { font-size:13px; color:#5c5c5c; }
+  .res .r b { color:var(--red); }
+  .grp { background:var(--ink); color:#fff; font-family:Oswald, sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:16px; padding:8px 14px; border-radius:10px 10px 0 0; margin-top:18px; display:flex; justify-content:space-between; }
+  .lst { background:#fff; border-radius:0 0 12px 12px; overflow:hidden; }
+  .ln { display:grid; grid-template-columns:minmax(120px,1.1fr) minmax(110px,.9fr) 2fr; gap:12px; align-items:center; padding:9px 14px; border-top:1px solid var(--line); }
+  .ln:first-child { border-top:0; }
+  .ln .n { font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ln .h { font-variant-numeric:tabular-nums; font-size:15px; }
+  .ln .h i { font-style:normal; font-size:11px; font-weight:700; text-transform:uppercase; background:#fff3d6; color:#7a4d00; border-radius:6px; padding:1px 6px; margin-right:4px; }
+  .ln.off { opacity:.42; }
+  .ln.on .n::before { content:""; display:inline-block; width:9px; height:9px; border-radius:50%; background:#137a37; margin-right:7px; vertical-align:1px; }
+  .tl { position:relative; height:16px; background:#f0f0f0; border-radius:8px; }
+  .tl span { position:absolute; top:0; bottom:0; background:var(--red); border-radius:8px; }
+  .tl span.e { background:var(--ink); }
+  .tl span.s { background:#d9a400; }
+  .tl .now { position:absolute; top:-4px; bottom:-4px; width:2px; background:#137a37; }
+  .axe { display:grid; grid-template-columns:minmax(120px,1.1fr) minmax(110px,.9fr) 2fr; gap:12px; padding:4px 14px 0; font-size:12px; color:#5c5c5c; }
+  .axe div:last-child { display:flex; justify-content:space-between; }
+  .abs { background:#fff; border-radius:12px; padding:12px 16px; margin-top:18px; font-size:15px; }
+  .abs b { font-family:Oswald, sans-serif; text-transform:uppercase; letter-spacing:.5px; margin-right:6px; }
+  .vide, .err { background:#fff; border-radius:12px; padding:22px; margin-top:18px; text-align:center; color:#5c5c5c; }
+  .err { color:var(--red); }
+  .maj { font-size:13px; color:#5c5c5c; margin-top:18px; text-align:center; }
+  @media (max-width:600px) { .ln, .axe { grid-template-columns:1fr 1fr; } .ln .tl, .axe div:last-child { grid-column:1 / -1; } .axe div:nth-child(-n+2) { display:none; } }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css?v=202611252130">
+</head>
+<body data-app="planning">
+<header>
+  <img alt="KFC" src="logo.png">
+  <div class="tt"><b>Planning</b><span>Équipe du jour · KFC Toulouse Borderouge</span></div>
+  <div class="dt"><b id="h-heure"></b><span id="h-date"></span></div>
+</header>
+<div class="stripes"></div>
+<nav class="tabs"><div class="seg" id="tabs"></div></nav>
+<main id="main"><div class="vide">Chargement…</div></main>
+<script>
+(function () {
+  var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  var MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  var T0 = 8 * 60, T1 = 26 * 60, D = null, SEL = null;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function auj() { return iso(new Date()); }
+  function dt(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function hm(t) { var p = String(t).split(':'); var h = +p[0], m = +p[1] || 0; return (h < 6 ? h + 24 : h) * 60 + m; }
+  function segs(h) { var out = []; String(h || '').split('/').forEach(function (s) { var m = s.match(/(\d{1,2}):(\d{2})\D+(\d{1,2}):(\d{2})/); if (!m) return; var a = hm(m[1] + ':' + m[2]), z = hm(m[3] + ':' + m[4]); if (z <= a) z += 1440; out.push([a, z]); }); return out; }
+  function hTxt(h) { return String(h || '').replace(/(\d{1,2}):(\d{2})/g, function (_, a, b) { return +a + 'h' + (b === '00' ? '' : b); }); }
+  function nowM() { var d = new Date(), m = d.getHours() * 60 + d.getMinutes(); return m < 5 * 60 ? m + 1440 : m; }
+  function labJour(s) { var t = auj(), d = dt(s); if (s === t) return "Aujourd'hui"; var dm = new Date(); dm.setDate(dm.getDate() + 1); if (s === iso(dm)) return 'Demain'; return JOURS[d.getDay()].slice(0, 3) + '. ' + d.getDate(); }
+  function horloge() { var d = new Date(); document.getElementById('h-heure').textContent = d.getHours() + 'h' + pad(d.getMinutes()); document.getElementById('h-date').textContent = JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()]; }
+
+  function onglets() {
+    var t = auj(), dates = [];
+    D.rows.forEach(function (r) { if (r.date >= t && dates.indexOf(r.date) < 0) dates.push(r.date); });
+    dates.sort(); if (dates.indexOf(t) < 0) dates.unshift(t);
+    if (!SEL || dates.indexOf(SEL) < 0) SEL = t;
+    var box = document.getElementById('tabs'); box.innerHTML = '';
+    dates.slice(0, 7).forEach(function (d) { var b = el('button', '', labJour(d)); b.type = 'button'; b.setAttribute('aria-selected', String(d === SEL)); b.onclick = function () { SEL = d; onglets(); rendre(); }; box.append(b); });
+  }
+
+  function ligne(r, isT, nm) {
+    var S = segs(r.h), syn = r.statut === 'Synergy', pres = isT && !syn && S.some(function (s) { return nm >= s[0] && nm < s[1]; });
+    var ln = el('div', 'ln' + (isT ? (pres ? ' on' : ' off') : ''));
+    ln.append(el('div', 'n', r.nom));
+    var h = el('div', 'h'); if (syn) h.append(el('i', '', 'Synergy')); h.append(hTxt(r.h)); ln.append(h);
+    var tl = el('div', 'tl');
+    S.forEach(function (s) { var sp = el('span', r.type === 'enca' ? 'e' : syn ? 's' : ''); var x0 = Math.max(0, (s[0] - T0) / (T1 - T0)), x1 = Math.min(1, (s[1] - T0) / (T1 - T0)); sp.style.left = (x0 * 100) + '%'; sp.style.width = (Math.max(.01, x1 - x0) * 100) + '%'; tl.append(sp); });
+    if (isT && nm >= T0 && nm <= T1) { var n = el('i', 'now'); n.style.left = ((nm - T0) / (T1 - T0) * 100) + '%'; tl.append(n); }
+    ln.append(tl);
+    return { ln: ln, pres: pres };
+  }
+
+  function groupe(main, titre, L, isT, nm) {
+    if (!L.length) return 0;
+    var g = el('div', 'grp'); g.append(el('span', '', titre), el('span', '', L.length)); main.append(g);
+    var ax = el('div', 'axe'); ax.append(el('div'), el('div')); var a3 = el('div'); ['8h', '12h', '16h', '20h', '0h', '2h'].forEach(function (x) { a3.append(el('span', '', x)); }); ax.append(a3); main.append(ax);
+    var lst = el('div', 'lst'), np = 0;
+    L.forEach(function (r) { var x = ligne(r, isT, nm); if (x.pres) np++; lst.append(x.ln); });
+    main.append(lst); return np;
+  }
+
+  function rendre() {
+    var main = document.getElementById('main'); main.innerHTML = '';
+    if (!D) return;
+    var isT = SEL === auj(), nm = nowM();
+    var J = D.rows.filter(function (r) { return r.date === SEL; });
+    var trav = J.filter(function (r) { return r.statut === 'travail' || r.statut === 'Synergy'; }).sort(function (a, b) { var x = segs(a.h)[0], y = segs(b.h)[0]; return (x ? x[0] : 9999) - (y ? y[0] : 9999) || a.nom.localeCompare(b.nom); });
+    var E = trav.filter(function (r) { return r.type === 'enca'; }), S = trav.filter(function (r) { return r.type !== 'enca'; });
+    var abs = J.filter(function (r) { return r.statut !== 'travail' && r.statut !== 'Synergy'; });
+    if (!trav.length) { main.append(el('div', 'vide', D.rows.length ? 'Pas de planning pour ce jour.' : "Le planning n'a pas encore été envoyé par le TDB.")); }
+    else {
+      var open = E.filter(function (r) { var s = segs(r.h)[0]; return s && s[0] <= 8 * 60; }), close = E.filter(function (r) { var s = segs(r.h); return s.length && s[s.length - 1][1] >= 24 * 60; });
+      var res = el('div', 'res');
+      var c1 = el('div'); c1.append(el('b', '', trav.length), el('span', '', 'personnes au planning')); res.append(c1);
+      var c2 = el('div', 'r'); c2.append(el('b', '', '–'), el('span', '', 'sur le terrain maintenant')); if (isT) res.append(c2);
+      var c3 = el('div'); c3.append(el('b', '', open.map(function (r) { return r.nom; }).join(', ') || '—'), el('span', '', 'open')); c3.firstChild.style.fontSize = '24px'; res.append(c3);
+      var c4 = el('div'); c4.append(el('b', '', close.map(function (r) { return r.nom; }).join(', ') || '—'), el('span', '', 'close')); c4.firstChild.style.fontSize = '24px'; res.append(c4);
+      main.append(res);
+      var np = groupe(main, 'Encadrants', E, isT, nm) + groupe(main, 'Équipiers', S, isT, nm);
+      if (isT) c2.firstChild.textContent = np;
+    }
+    if (abs.length) { var a = el('div', 'abs'); a.append(el('b', '', 'Absents prévus'), abs.map(function (r) { return r.nom + ' (' + r.statut + ')'; }).join(' · ')); main.append(a); }
+    main.append(el('div', 'maj', D.maj ? 'Planning envoyé par le TDB le ' + D.maj + (isT ? ' · les personnes pas sur le terrain à cette heure sont grisées' : '') : ''));
+  }
+
+  function afficher(d) { D = d || { rows: [] }; onglets(); rendre(); }
+  horloge();
+  BR.charge('formation', 'getPlanning', afficher, afficher).catch(function (e) {
+    if (D) return; var m = document.getElementById('main'); m.innerHTML = '';
+    m.append(el('div', 'err', /Fonction inconnue/.test(e.message) ? 'Le script « CLO LENBOR » doit être mis à jour (fonction getPlanning).' : 'Planning indisponible : ' + e.message));
+  });
+  setInterval(function () { horloge(); if (D && SEL === auj()) rendre(); }, 60000);
+})();
+</script>
+</body>
+</html>

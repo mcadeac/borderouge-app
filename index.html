@@ -13,7 +13,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=202611251956">
+<link rel="stylesheet" href="app.css?v=202611252130">
 <style>
   :root { --red:#e4002b; --ink:#1a1a1a; --mut:#5c5c5c; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -46,8 +46,8 @@
   .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
   @media (max-width:600px) { .top { height:180px; } .logo { width:120px; height:120px; } .logo img { width:90px; height:90px; } .nums { display:none; } .tx b { font-size:28px; } .ic { width:64px; height:64px; } }
 </style>
-<script src="config.js?v=202611251956"></script>
-<script src="app.js?v=202611251956"></script>
+<script src="config.js?v=202611252130"></script>
+<script src="app.js?v=202611252130"></script>
 </head>
 <body>
 <div class="top"><div class="logo"><img src="logo.png" alt="KFC"></div></div>
@@ -62,6 +62,11 @@
     <div class="ic k"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4 2.5-2.5Z"/></svg></div>
     <div class="tx"><b>SMEP</b><span>Maintenance et entretien préventif</span></div>
     <div class="nums"><div><b id="s-sem">–</b><span>à faire semaine</span></div><div class="r"><b id="s-ko">–</b><span>non OK</span></div></div>
+  </a>
+  <a class="tile" href="planning.html">
+    <div class="ic"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h3M8 18h6"/></svg></div>
+    <div class="tx"><b>Planning</b><span id="p-sous">Équipe du jour et des 6 prochains jours</span></div>
+    <div class="nums"><div><b id="p-tot">–</b><span>au planning</span></div><div class="r"><b id="p-now">–</b><span>sur le terrain</span></div></div>
   </a>
   <section class="rem" aria-live="polite"><h2>À ne pas oublier</h2><div id="rem"><div class="vide">Chargement…</div></div></section>
   <div class="foot">
@@ -111,6 +116,16 @@
     q7.filter(function (x) { return x.res === 'Raté'; }).slice(0, 2).forEach(function (x) { R.push({ t: 'QCM ' + x.qcm + ' raté par ' + x.prenom + ' ' + x.nom + ' (' + String(x.date).slice(0, 5) + ') — à repasser', src: 'Formation', h: 'formation.html' }); });
     REM.formation = R; rendreRem();
   }).catch(function (e) { document.getElementById('f-qcm').textContent = '?'; REM.formation = [{ t: 'Formation : ' + e.message, src: 'Formation', h: 'formation.html' }]; rendreRem(); });
+  // Planning (envoyé par le TDB) : personnes au planning aujourd'hui et sur le terrain maintenant
+  BR.charge('formation', 'getPlanning', function (D) {
+    var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), d = new Date(), m = d.getHours() * 60 + d.getMinutes(); if (m < 300) m += 1440;
+    var J = (D.rows || []).filter(function (r) { return r.date === t && (r.statut === 'travail' || r.statut === 'Synergy'); });
+    var hm = function (h, mi) { h = +h; return (h < 6 ? h + 24 : h) * 60 + +mi; };
+    var sur = J.filter(function (r) { return r.statut !== 'Synergy' && String(r.h).split('/').some(function (s) { var x = s.match(/(\d{1,2}):(\d{2})\D+(\d{1,2}):(\d{2})/); if (!x) return false; var a = hm(x[1], x[2]), z = hm(x[3], x[4]); if (z <= a) z += 1440; return m >= a && m < z; }); });
+    document.getElementById('p-tot').textContent = J.length; document.getElementById('p-now').textContent = sur.length;
+    var E = J.filter(function (r) { return r.type === 'enca'; }).map(function (r) { return r.nom; });
+    if (E.length) document.getElementById('p-sous').textContent = 'Encadrants : ' + E.join(', ');
+  }).catch(function () { document.getElementById('p-tot').textContent = '?'; });
 })();
 </script>
 </body>

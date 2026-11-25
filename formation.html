@@ -74,6 +74,8 @@
   .foot { position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.96); backdrop-filter:blur(8px); box-shadow:0 -2px 12px rgba(0,0,0,.08); padding:12px 18px calc(12px + env(safe-area-inset-bottom)); z-index:6; }
   .foot .in { max-width:920px; margin:0 auto; display:flex; gap:12px; }
   .foot .btn { margin:0; }
+  .foot .btn.aband, body[data-app] .foot .btn.aband { flex:0 0 auto; width:auto; padding-left:18px; padding-right:18px; color:var(--red); border-color:var(--red); }
+  #br li button.aband { color:var(--red); border-color:var(--red); background:#fff; }
   .msg { padding:14px 16px; border-radius:12px; margin-top:16px; font-weight:700; }
   .msg.err { background:var(--kob); color:var(--ko); } .msg.inf { background:#eef3ff; color:#1f3f8f; }
   .res { text-align:center; padding:34px 18px; }
@@ -172,6 +174,7 @@
     <div id="err2" class="msg err hidden"></div>
   </main>
   <div class="foot"><div class="in">
+    <button class="btn sec aband" id="g-aband" title="Effacer cette CLO sans l'enregistrer">Abandonner</button>
     <button class="btn sec" id="g-pause">Continuer plus tard</button>
     <button class="btn" id="g-valider" disabled>Valider la CLO</button>
   </div></div>
@@ -320,7 +323,13 @@ function afficher(d, premier) {
       var p = b.cle.split('|'), li = el('li');
       li.append(el('span', '', p[1] + ' ' + p[0] + ' · CLO ' + p[2]));
       var bt = el('button', '', 'Reprendre'); bt.onclick = function () { reprendre({ nom: p[0], prenom: p[1], clo: p[2] }); };
-      li.append(bt); br.append(li);
+      var ab = el('button', 'aband', 'Abandonner'); ab.onclick = function () {
+        if (!confirm('Abandonner la CLO ' + p[2] + ' de ' + p[1] + ' ' + p[0] + ' ? Les réponses déjà notées seront effacées.')) return;
+        ab.disabled = true; bt.disabled = true;
+        abandonner({ nom: p[0], prenom: p[1], clo: p[2] }).then(function () { li.remove(); D.brouillons = D.brouillons.filter(function (x) { return x !== b; }); BR.majCache('formation', 'getInit', D); $('bloc-br').classList.toggle('hidden', !D.brouillons.length); })
+          .catch(function (e) { ab.disabled = false; bt.disabled = false; alert(e.message); });
+      };
+      li.append(bt, ab); br.append(li);
     });
     $('bloc-br').classList.toggle('hidden', !D.brouillons.length);
     // Historique
@@ -416,6 +425,20 @@ function maj() {
 function local() { try { S.commentaire = $('g-com').value; localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} }
 $('g-com').oninput = local;
 function finLocal() { try { localStorage.removeItem(LS); } catch (e) {} }
+
+// Abandon d'une CLO : efface la copie de la tablette et le brouillon du Sheet (fonction supprimerBrouillon du script)
+function abandonner(k) {
+  return srv('supprimerBrouillon', { nom: k.nom, prenom: k.prenom, clo: k.clo }).catch(function (e) {
+    if (/Fonction inconnue/.test(e.message)) throw new Error('Le script CLO LENBOR doit être mis à jour (ajouter "supprimerBrouillon" dans API_FNS) pour effacer une CLO commencée.');
+    throw e;
+  });
+}
+$('g-aband').onclick = function () {
+  if (!S || !confirm('Abandonner cette CLO ? Les réponses notées seront effacées et rien ne sera enregistré.')) return;
+  var k = S, b = $('g-aband'); b.disabled = true; err('err2');
+  finLocal(); S = null; show('e-choix');
+  abandonner(k).then(function () { b.disabled = false; init(); }).catch(function (e) { b.disabled = false; init(); alert('CLO effacée de cette tablette, mais pas encore du Sheet : ' + e.message); });
+};
 
 $('g-pause').onclick = function () {
   local(); var b = $('g-pause'); b.disabled = true; b.textContent = 'Enregistrement…';

@@ -1,7 +1,7 @@
 /* Garde une copie des pages de l'app pour qu'elles s'ouvrent vite et même sans réseau.
  * Toujours la version en ligne d'abord (les mises à jour arrivent tout de suite), la copie si pas de réseau.
  * Les appels aux Google Sheets ne passent pas par ici. */
-var CACHE = 'borderouge-v2';
+var CACHE = 'borderouge-v3';
 self.addEventListener('install', function (e) { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', function (e) {

@@ -11,48 +11,107 @@
 <meta name="apple-mobile-web-app-title" content="Borderouge">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
-<link rel="stylesheet" href="app.css?v=202611251935">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=202611251952">
 <style>
-  :root { --red:#e4002b; --ink:#111114; --mut:#55555c; --pg:#f6f4f1; --sh:0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.07); }
+  :root { --red:#e4002b; --ink:#1a1a1a; --mut:#5c5c5c; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { margin:0; font:17px/1.4 -apple-system, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif; color:var(--ink); background:var(--pg); -webkit-font-smoothing:antialiased; min-height:100vh; }
-  header { background:#fff; display:flex; align-items:center; gap:16px; padding:14px 22px; }
-  header img { width:62px; }
-  header b { font-size:28px; font-weight:900; letter-spacing:-.5px; display:block; }
-  header span { color:var(--mut); font-size:14px; font-weight:600; }
-  .stripes { height:12px; background:repeating-linear-gradient(90deg, var(--red) 0 22px, #fff 22px 34px); }
-  main { max-width:900px; margin:0 auto; padding:26px 18px 60px; }
-  .tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
-  .tile { display:flex; flex-direction:column; gap:8px; background:#fff; border-radius:20px; padding:24px 22px; box-shadow:var(--sh); text-decoration:none; color:inherit; border-top:8px solid var(--red); min-height:170px; }
-  .tile:active { transform:scale(.98); }
-  .tile b { font-size:26px; font-weight:900; }
-  .tile span { color:var(--mut); font-size:16px; }
-  .tile i { margin-top:auto; font-style:normal; font-weight:800; color:var(--red); }
-  .tile.k { border-top-color:var(--ink); } .tile.k i { color:var(--ink); }
-  .foot { margin-top:26px; color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  body { margin:0; font:17px/1.4 Roboto, -apple-system, "Segoe UI", Arial, sans-serif; color:var(--ink); background:#fff; -webkit-font-smoothing:antialiased; min-height:100vh; }
+  .top { height:230px; background:repeating-linear-gradient(90deg, var(--red) 0 64px, #fff 64px 92px); position:relative; display:flex; align-items:flex-end; justify-content:center; }
+  .top::after { content:""; position:absolute; left:0; right:0; bottom:0; height:70px; background:var(--red); }
+  .logo { position:relative; z-index:1; width:150px; height:150px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:-60px; box-shadow:0 6px 24px rgba(0,0,0,.18); }
+  .logo img { width:112px; height:112px; object-fit:contain; }
+  .ti { text-align:center; padding:74px 24px 6px; }
+  .ti b { display:block; font-family:Oswald, "Arial Narrow", sans-serif; font-weight:700; font-size:44px; text-transform:uppercase; letter-spacing:1px; line-height:1.1; }
+  .ti span { color:var(--mut); font-size:16px; }
+  main { max-width:760px; margin:0 auto; padding:20px 22px 50px; display:flex; flex-direction:column; gap:18px; }
+  .tile { display:flex; align-items:center; gap:22px; background:#fff; border:3px solid var(--ink); border-radius:22px; padding:20px 24px; text-decoration:none; color:inherit; }
+  .tile:active { transform:scale(.985); }
+  .ic { width:86px; height:86px; border-radius:20px; background:var(--red); display:flex; align-items:center; justify-content:center; flex:none; }
+  .ic.k { background:var(--ink); }
+  .tx { flex:1; min-width:0; }
+  .tx b { display:block; font-family:Oswald, sans-serif; font-weight:700; font-size:34px; text-transform:uppercase; line-height:1.1; }
+  .tx span { color:var(--mut); font-size:16px; }
+  .nums { display:flex; gap:18px; text-align:right; }
+  .nums div b { display:block; font-family:Oswald, sans-serif; font-weight:700; font-size:44px; line-height:1; }
+  .nums div span { font-size:13px; color:var(--mut); white-space:nowrap; }
+  .nums .r b { color:var(--red); }
+  .rem { background:var(--red); color:#fff; border-radius:18px; padding:18px 22px; display:flex; flex-direction:column; gap:8px; }
+  .rem h2 { margin:0; font-family:Oswald, sans-serif; font-weight:600; font-size:20px; text-transform:uppercase; letter-spacing:1px; }
+  .rem a { color:#fff; text-decoration:none; font-size:16px; display:flex; gap:10px; justify-content:space-between; }
+  .rem a i { font-style:normal; font-size:12px; font-weight:700; background:rgba(255,255,255,.2); border-radius:8px; padding:2px 7px; align-self:center; text-transform:uppercase; flex:none; }
+  .rem .vide { opacity:.9; font-size:16px; }
+  .foot { color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
   .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
+  @media (max-width:600px) { .top { height:180px; } .logo { width:120px; height:120px; } .logo img { width:90px; height:90px; } .nums { display:none; } .tx b { font-size:28px; } .ic { width:64px; height:64px; } }
 </style>
-<script src="config.js?v=202611251935"></script>
-<script src="app.js?v=202611251935"></script>
+<script src="config.js?v=202611251952"></script>
+<script src="app.js?v=202611251952"></script>
 </head>
 <body>
-<header>
-  <img src="logo.png" alt="KFC">
-  <div><b>Borderouge</b><span>KFC Toulouse Borderouge · outils de l'équipe</span></div>
-</header>
-<div class="stripes"></div>
+<div class="top"><div class="logo"><img src="logo.png" alt="KFC"></div></div>
+<div class="ti"><b>Borderouge</b><span id="date"></span></div>
 <main>
-  <div class="tiles">
-    <a class="tile" href="formation.html"><b>Formation</b><span>CLO sur tablette, QCM HSA / Service / Pack / Prod, suivi des certifications</span><i>Ouvrir ›</i></a>
-    <a class="tile k" href="smep.html"><b>SMEP</b><span>Maintenance et entretien préventif : tâches de la semaine, du mois, points non OK, calendrier imprimable</span><i>Ouvrir ›</i></a>
-  </div>
+  <a class="tile" href="formation.html">
+    <div class="ic"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
+    <div class="tx"><b>Formation</b><span>CLO · QCM · suivi</span></div>
+    <div class="nums"><div><b id="f-qcm">–</b><span>QCM 7 jours</span></div><div class="r"><b id="f-clo">–</b><span>CLO ce mois</span></div></div>
+  </a>
+  <a class="tile" href="smep.html">
+    <div class="ic k"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4 2.5-2.5Z"/></svg></div>
+    <div class="tx"><b>SMEP</b><span>Maintenance et entretien préventif</span></div>
+    <div class="nums"><div><b id="s-sem">–</b><span>à faire semaine</span></div><div class="r"><b id="s-ko">–</b><span>non OK</span></div></div>
+  </a>
+  <section class="rem" aria-live="polite"><h2>À ne pas oublier</h2><div id="rem"><div class="vide">Chargement…</div></div></section>
   <div class="foot">
-    <span>Astuce : ajoute cette page à l'écran d'accueil de la tablette (Partager › « Sur l'écran d'accueil ») pour l'ouvrir comme une application.</span>
+    <span>Astuce : Partager › « Sur l'écran d'accueil » pour l'ouvrir comme une application.</span>
     <button type="button" id="oubli">Changer le code restaurant</button>
   </div>
 </main>
 <script>
-document.getElementById('oubli').onclick = function () { BR.oublierCode(); alert('Le code sera redemandé à la prochaine ouverture de Formation ou SMEP.'); };
+(function () {
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  var JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function semaine(d) { var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), j = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - j); var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + '-W' + pad(Math.ceil(((t - y0) / 86400000 + 1) / 7)); }
+  var now = new Date(), wk = semaine(now), ym = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+  document.getElementById('date').textContent = JOURS[now.getDay()] + ' ' + now.getDate() + ' ' + MOIS[now.getMonth()] + ' · semaine ' + (+wk.split('W')[1]);
+  document.getElementById('oubli').onclick = function () { BR.oublierCode(); alert('Le code sera redemandé à la prochaine ouverture.'); };
+  var REM = { smep: [], formation: [] };
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function rendreRem() {
+    var box = document.getElementById('rem'); box.innerHTML = '';
+    var L = REM.smep.concat(REM.formation);
+    if (!L.length) { box.append(el('div', 'vide', 'Rien de particulier.')); return; }
+    L.slice(0, 6).forEach(function (r) { var a = el('a'); a.href = r.h; a.append(el('span', '', '• ' + r.t), el('i', '', r.src)); box.append(a); });
+  }
+  // SMEP : tâches de la semaine restantes, points non OK, aire de jeux, récurrentes du mois
+  BR.charge('smep', 'getData', function (D) {
+    var bon = function (r) { return r.res === 'OK' || r.st === 'Corrigé'; };
+    var restant = D.cat.H.filter(function (t) { return !D.rows.some(function (r) { return r.code === t.code && r.p === wk && bon(r); }); }).length;
+    var ko = D.rows.filter(function (r) { return r.res === 'Pas OK' && r.st !== 'Corrigé'; });
+    document.getElementById('s-sem').textContent = restant;
+    document.getElementById('s-ko').textContent = ko.length;
+    var R = ko.slice(-3).reverse().map(function (r) { return { t: r.app + ' : ' + r.t + ' — ' + (r.st || 'à traiter'), src: 'SMEP', h: 'smep.html' }; });
+    if (!D.rows.some(function (r) { return r.f === 'Aire de jeux (mensuel)' && r.p === ym; })) R.push({ t: 'Aire de jeux : contrôle mensuel pas encore fait', src: 'SMEP', h: 'smep.html' });
+    var m = now.getMonth() + 1, rec = D.rec.filter(function (r) { return r.mois.indexOf(m) >= 0 && !D.rows.some(function (x) { return x.code === r.code && x.p === ym && bon(x); }); });
+    if (rec.length) R.push({ t: rec.length + ' tâche' + (rec.length > 1 ? 's' : '') + ' récurrente' + (rec.length > 1 ? 's' : '') + ' prévue' + (rec.length > 1 ? 's' : '') + ' ce mois', src: 'SMEP', h: 'smep.html' });
+    REM.smep = R; rendreRem();
+  }).catch(function (e) { document.getElementById('s-sem').textContent = '?'; REM.smep = [{ t: 'SMEP : ' + e.message, src: 'SMEP', h: 'smep.html' }]; rendreRem(); });
+  // Formation : QCM des 7 derniers jours, CLO du mois, CLO commencées, QCM ratés
+  function dFr(s) { var p = String(s).split('/'); return p.length === 3 ? new Date(+p[2] < 100 ? 2000 + +p[2] : +p[2], +p[1] - 1, +p[0]) : null; }
+  BR.charge('formation', 'getInit', function (D) {
+    var j7 = new Date(now); j7.setDate(j7.getDate() - 7);
+    var q7 = (D.histQcm || []).filter(function (x) { var d = dFr(x.date); return d && d >= j7; });
+    var cm = (D.hist || []).filter(function (x) { var d = dFr(x.date); return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+    document.getElementById('f-qcm').textContent = q7.length;
+    document.getElementById('f-clo').textContent = cm.length;
+    var R = (D.brouillons || []).slice(0, 2).map(function (b) { var p = b.cle.split('|'); return { t: 'CLO ' + p[2] + ' de ' + p[1] + ' ' + p[0] + ' commencée — à terminer', src: 'Formation', h: 'formation.html' }; });
+    q7.filter(function (x) { return x.res === 'Raté'; }).slice(0, 2).forEach(function (x) { R.push({ t: 'QCM ' + x.qcm + ' raté par ' + x.prenom + ' ' + x.nom + ' (' + String(x.date).slice(0, 5) + ') — à repasser', src: 'Formation', h: 'formation.html' }); });
+    REM.formation = R; rendreRem();
+  }).catch(function (e) { document.getElementById('f-qcm').textContent = '?'; REM.formation = [{ t: 'Formation : ' + e.message, src: 'Formation', h: 'formation.html' }]; rendreRem(); });
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,87 @@
+/* Thème « Seau rouge » (piste B validée par Mathieu le 25/11/2026) — commun à Formation et SMEP.
+ * Chargé après le style de chaque page : il ne fait que le recouvrir. */
+:root { --red:#e4002b; --red2:#a8001f; --ink:#1a1a1a; --pg:#f2f2f2; --line:#e2e2e2; }
+body[data-app] { font-family:Roboto, -apple-system, "Segoe UI", Arial, sans-serif; background:var(--pg); color:var(--ink); }
+
+/* En-tête rouge + bande rayée */
+body[data-app] header { background:var(--red); color:#fff; padding:12px 22px; gap:14px; }
+body[data-app] header img { width:54px; height:54px; object-fit:contain; background:#fff; border-radius:50%; padding:6px; box-sizing:border-box; }
+body[data-app] header .tt b, body[data-app] header > div > b { font-family:Oswald, "Arial Narrow", sans-serif; font-weight:700; font-size:32px; text-transform:uppercase; letter-spacing:1px; color:#fff; }
+body[data-app] header span { color:rgba(255,255,255,.88) !important; }
+body[data-app] header .dt b { font-family:Oswald, sans-serif; font-weight:600; font-size:22px; color:#fff; text-transform:uppercase; }
+body[data-app] header .sync { color:#fff !important; opacity:.9; }
+body[data-app] .br-home { background:#fff; color:var(--red); border-radius:50%; }
+body[data-app] .stripes { height:14px; background:repeating-linear-gradient(90deg, #fff 0 30px, var(--red) 30px 44px); }
+
+/* Onglets en pastilles */
+body[data-app] .tabs { background:var(--pg); padding:14px 12px 6px; }
+body[data-app] .tabs .seg { background:none; box-shadow:none; padding:0; gap:8px; }
+body[data-app] .tabs button { font-family:Roboto, sans-serif; font-weight:700; font-size:16px; border:2px solid #d0d0d0; background:#fff; color:var(--ink); border-radius:24px; padding:10px 20px; }
+body[data-app] .tabs button[aria-selected=true] { background:var(--ink); border-color:var(--ink); color:#fff; box-shadow:none; }
+body[data-app] .tabs .badge { background:var(--red); }
+
+/* Titres */
+body[data-app] h2, body[data-app] .h2 b { font-family:Oswald, sans-serif; font-weight:700; font-size:24px; letter-spacing:.5px; text-transform:uppercase; border-left:0; padding-left:0; color:var(--ink); }
+body[data-app] h2 { margin:24px 0 10px; }
+
+/* Cartes, champs, boutons */
+body[data-app] .card, body[data-app] .qui { border-radius:16px; box-shadow:none; background:#fff; }
+body[data-app] select, body[data-app] input[type=text], body[data-app] input[type=date], body[data-app] input[type=number], body[data-app] textarea { border-radius:12px; border-color:#d0d0d0; }
+body[data-app] .btn { border-radius:28px; background:var(--red); box-shadow:none; font-weight:700; }
+body[data-app] .btn.sec { background:#fff; color:var(--ink); border:2px solid var(--ink); }
+body[data-app] .btn.g { background:#137a37; }
+body[data-app] .sg { border-radius:22px; border-color:#d0d0d0; }
+body[data-app] .sg.on { background:var(--ink); border-color:var(--ink); }
+
+/* Choix CLO / QCM : gros boutons à contour noir */
+body[data-app] .types button { border:2px solid var(--ink); border-radius:18px; font-family:Oswald, sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+body[data-app] .types button[aria-pressed=true] { background:var(--red); border-color:var(--red); box-shadow:none; }
+
+/* Listes : bandeau noir par appareil / rubrique, lignes plates */
+body[data-app] .grp, body[data-app] .sec-t { background:var(--ink); color:#fff; font-family:Oswald, sans-serif; font-weight:600; font-size:14px; letter-spacing:1px; text-transform:uppercase; padding:7px 16px; margin:14px 0 0; border-radius:14px 14px 0 0; border-left:0; }
+body[data-app] .sec-t span { color:#fff !important; font-family:Oswald, sans-serif; font-size:14px !important; }
+body[data-app] .task, body[data-app] .pt { background:#fff; border-radius:0; box-shadow:none; border-left:0; margin:0; border-bottom:1px solid #ececec; }
+body[data-app] .task.ok, body[data-app] .pt.ok { background:#eef8f1; }
+body[data-app] .task.ko, body[data-app] .pt.ko { background:#fdebee; }
+body[data-app] .task.wait { background:#fff6e0; }
+body[data-app] .yn { border-radius:22px; border:2px solid var(--ink); background:#fff; color:var(--ink); }
+body[data-app] .yn.y.on { background:#137a37; border-color:#137a37; color:#fff; }
+body[data-app] .yn.n.on { background:var(--red); border-color:var(--red); color:#fff; }
+body[data-app] .yn.u { border-color:#c8c8c8; color:#6b6b6b; }
+body[data-app] .pt .ch button { border-radius:22px; border:2px solid var(--ink); background:#fff; color:var(--ink); height:48px; width:68px; font-size:22px; }
+body[data-app] .pt .ch .y[aria-pressed=true] { background:#137a37; border-color:#137a37; color:#fff; }
+body[data-app] .pt .ch .n[aria-pressed=true] { background:var(--red); border-color:var(--red); color:#fff; }
+
+/* SMEP : compteurs des catégories dans un bloc à contour noir */
+body[data-app] .cats { gap:0; background:var(--pg); padding:12px 0 6px; }
+body[data-app] .cats::before { content:none; }
+body[data-app] .cat { flex-direction:column-reverse; gap:2px; border:2px solid var(--ink); border-left-width:0; border-radius:0; background:#fff; padding:10px 6px; font-size:13px; font-weight:700; text-transform:uppercase; min-width:0; }
+body[data-app] .cat:first-child { border-left-width:2px; border-radius:16px 0 0 16px; }
+body[data-app] .cat:last-child { border-radius:0 16px 16px 0; }
+body[data-app] .cat .nb { background:none !important; color:inherit !important; font-family:Oswald, sans-serif; font-weight:700; font-size:30px; line-height:1; padding:0; }
+body[data-app] .cat .nb.z { color:#137a37 !important; }
+body[data-app] .cat.on { background:var(--red); border-color:var(--ink); color:#fff; }
+body[data-app] .cat.on .nb.z { color:#fff !important; }
+body[data-app] .alertko { border-radius:16px; background:var(--red); color:#fff; }
+
+/* QCM */
+body[data-app] .qq { border-radius:16px; box-shadow:none; }
+body[data-app] .qq .n { color:var(--red); font-family:Oswald, sans-serif; letter-spacing:1px; }
+body[data-app] .qq .op { border-radius:14px; background:#fff; border-color:#d0d0d0; }
+body[data-app] .qq .op[aria-pressed=true] { border-color:var(--red); background:#fdebee; }
+
+/* Barres collées en haut pendant une saisie */
+body[data-app] .bar { box-shadow:0 2px 0 var(--ink); }
+body[data-app] .prog i { background:var(--red); }
+body[data-app] .foot { box-shadow:0 -2px 0 var(--ink); }
+
+/* Points non OK, calendrier */
+body[data-app] .an { border-radius:16px; box-shadow:none; }
+body[data-app] .calbox, body[data-app] .sv-wrap { border-radius:16px; box-shadow:none; border:2px solid var(--ink); }
+
+@media (max-width:640px) {
+  body[data-app] .cat { font-size:11px; }
+  body[data-app] .cat .nb { font-size:24px; }
+  body[data-app] .tabs button { padding:8px 14px; font-size:14px; }
+}
+@media print { body[data-app] header, body[data-app] .stripes { display:none !important; } }

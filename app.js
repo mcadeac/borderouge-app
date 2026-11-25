@@ -6,8 +6,10 @@
   function code() { try { return localStorage.getItem(CLE) || ''; } catch (e) { return ''; } }
   function setCode(c) { try { localStorage.setItem(CLE, c); } catch (e) {} }
 
+  var attente = null; // une seule fenêtre de code à la fois, partagée par tous les appels
   function demanderCode(msg) {
-    return new Promise(function (ok) {
+    if (attente) return attente;
+    attente = new Promise(function (ok) {
       var old = document.getElementById('br-code'); if (old) old.remove();
       var w = document.createElement('div'); w.id = 'br-code';
       w.innerHTML = '<form><img src="logo.png" alt="KFC"><b>Code restaurant</b><p></p>' +
@@ -19,9 +21,10 @@
       w.querySelector('form').onsubmit = function (e) {
         e.preventDefault();
         if (!i.value.trim()) return;
-        setCode(i.value.trim()); w.remove(); ok();
+        setCode(i.value.trim()); w.remove(); attente = null; ok();
       };
     });
+    return attente;
   }
 
   function appel(app, fn, arg) {

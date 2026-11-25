@@ -11,9 +11,9 @@
 <meta name="apple-mobile-web-app-title" content="Borderouge">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
-<link rel="stylesheet" href="app.css?v=202611251952">
-<script src="config.js?v=202611251952"></script>
-<script src="app.js?v=202611251952"></script>
+<link rel="stylesheet" href="app.css?v=202611251956">
+<script src="config.js?v=202611251956"></script>
+<script src="app.js?v=202611251956"></script>
 <style>
   :root { --red:#e4002b; --red2:#b8001f; --ink:#111114; --mut:#6b6b72; --line:#e6e6ea; --pg:#f6f4f1; --ok:#137a37; --okb:#e3f5e8; --ko:#c4001f; --kob:#fde7ea; --sh:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.06); }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -125,7 +125,7 @@
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="theme.css?v=202611251952">
+<link rel="stylesheet" href="theme.css?v=202611251956">
 </head>
 <body data-app="formation">
 <header><img alt="KFC" src="logo.png"><div class="tt"><b>Formation</b><span>KFC Toulouse Borderouge · CLO &amp; QCM</span></div></header>
@@ -277,8 +277,25 @@ function nomComplet(p) { return p.prenom + ' ' + p.nom; }
 function total(g) { return g.sections.reduce(function (a, s) { return a + s.points.length; }, 0); }
 
 /* ---------- Accueil ---------- */
+/* Ouverture immédiate : la dernière copie connue (gardée sur la tablette, aussi remplie par l'accueil)
+   s'affiche tout de suite, puis les données fraîches du Google Sheet la remplacent sans effacer les choix en cours. */
 function init() {
-  srv('getInit').then(function (d) {
+  var premier = true;
+  BR.charge('formation', 'getInit', function (d) { afficher(d, premier); premier = false; }, function (d) { afficher(d, false); })
+    .catch(function (e) { if (D) return; $('chargement').className = 'msg err'; $('chargement').textContent = 'Impossible de charger : ' + e.message; });
+}
+function garder() {
+  var p = function (id) { var b = $(id).querySelector('[aria-pressed=true]'); return b ? b.dataset.k : ''; };
+  return { k: p('types'), eq: $('eq').value, ob: $('obs').value, oa: $('obs-autre').value, d: $('date').value, qk: p('qtypes'), qeq: $('qeq').value, qd: $('qdate').value };
+}
+function remettre(g) {
+  var p = function (id, k) { if (k) $(id).querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.k === k ? 'true' : 'false'); }); };
+  p('types', g.k); p('qtypes', g.qk);
+  if (g.eq) $('eq').value = g.eq; if (g.ob) { $('obs').value = g.ob; $('obs-autre').value = g.oa; $('obs').onchange(); }
+  if (g.d) $('date').value = g.d; if (g.qeq) $('qeq').value = g.qeq; if (g.qd) $('qdate').value = g.qd;
+}
+function afficher(d, premier) {
+    var g = premier ? null : garder();
     D = d;
     $('chargement').classList.add('hidden'); $('choix').classList.remove('hidden');
     var t = $('types'); t.innerHTML = '';
@@ -317,9 +334,9 @@ function init() {
       h.append(li);
     });
     initQcm(); renderSuivi();
+    if (g) remettre(g);
     // CLO interrompue sur cette tablette (perte réseau)
-    try { var loc = JSON.parse(localStorage.getItem(LS) || 'null'); if (loc && loc.clo) { S = loc; ouvrirGrille(); } } catch (e) {}
-  }).catch(function (e) { $('chargement').className = 'msg err'; $('chargement').textContent = 'Impossible de charger : ' + e.message; });
+    if (premier) try { var loc = JSON.parse(localStorage.getItem(LS) || 'null'); if (loc && loc.clo) { S = loc; ouvrirGrille(); } } catch (e) {}
 }
 
 $('go').onclick = function () {
@@ -432,7 +449,7 @@ $('g-valider').onclick = function () {
   }).catch(function (e) { b.disabled = false; b.textContent = 'Valider la CLO'; err('err2', 'Pas enregistré (' + e.message + '). Les réponses restent gardées sur cette tablette, réessaie.'); });
 };
 
-$('r-new').onclick = function () { show('e-choix'); $('chargement').classList.remove('hidden'); $('choix').classList.add('hidden'); init(); };
+$('r-new').onclick = function () { show('e-choix'); init(); };
 
 /* ---------- QCM ---------- */
 var Q = null; // QCM en cours
@@ -523,8 +540,7 @@ $('q-valider').onclick = function () {
 };
 
 $('qr-new').onclick = function () {
-  $('chargement').classList.remove('hidden'); $('choix').classList.add('hidden');
-  srv('getInit').then(function (d) { D = d; $('chargement').classList.add('hidden'); $('choix').classList.remove('hidden'); initQcm(); renderSuivi(); });
+  init();
   show('e-qchoix');
 };
 

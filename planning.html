@@ -33,12 +33,15 @@
   .lst { background:#fff; border-radius:0 0 12px 12px; overflow:hidden; }
   .ln { display:grid; grid-template-columns:minmax(120px,1.1fr) minmax(110px,.9fr) 2fr; gap:12px; align-items:center; padding:9px 14px; border-top:1px solid var(--line); }
   .ln:first-child { border-top:0; }
-  .ln .n { font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ln .n { font-weight:700; display:flex; align-items:center; gap:6px; min-width:0; }
+  .ln .n .nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ln .n .ec { flex:none; font-size:11px; font-weight:700; border-radius:6px; padding:1px 5px; background:#eee; color:#555; font-variant-numeric:tabular-nums; }
+  .ln .n .ec.p { background:#fdebee; color:#c4001f; } .ln .n .ec.m { background:#e6f4ea; color:#137a37; }
   .ln .h { font-variant-numeric:tabular-nums; font-size:15px; }
   .ln .h i { font-style:normal; font-size:11px; font-weight:700; text-transform:uppercase; background:#fff3d6; color:#7a4d00; border-radius:6px; padding:1px 6px; margin-right:4px; }
   .ln.off { opacity:.42; }
-  .ln .n.cl { cursor:pointer; text-decoration:underline dotted; text-underline-offset:4px; }
-  .ln .n.cl::after { content:" ☎"; font-size:13px; color:var(--red); text-decoration:none; }
+  .ln .n.cl { cursor:pointer; } .ln .n.cl .nm { text-decoration:underline dotted; text-underline-offset:4px; }
+  .ln .n.cl .nm::after { content:" ☎"; font-size:13px; color:var(--red); }
   .ln .tel { grid-column:1 / -1; display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff3f5; border-radius:10px; padding:8px 12px; }
   .ln .tel a { font-family:Oswald, sans-serif; font-weight:700; font-size:26px; color:var(--red); text-decoration:none; letter-spacing:1px; }
   .ln .tel span { font-size:13px; color:#5c5c5c; }
@@ -117,7 +120,10 @@
   function ligne(r, isT, nm) {
     var S = segs(r.h), syn = r.statut === 'Synergy', pres = isT && !syn && S.some(function (s) { return nm >= s[0] && nm < s[1]; });
     var ln = el('div', 'ln' + (isT ? (pres ? ' on' : ' off') : ''));
-    var nm0 = el('div', 'n', r.nom); ln.append(nm0);
+    var nm0 = el('div', 'n'); nm0.append(el('span', 'nm', r.nom)); ln.append(nm0);
+    var EC = D.infos && D.infos.ecarts; if (r.type !== 'enca' && EC && EC.m && EC.m[r.nom] != null) { var em = EC.m[r.nom], a0 = Math.abs(em);
+      var ep = el('span', 'ec' + (em > 0 ? ' p' : em < 0 ? ' m' : ''), (em > 0 ? '+' : em < 0 ? '−' : '') + (a0 < 60 ? a0 + ' min' : Math.floor(a0 / 60) + 'h' + String(a0 % 60).padStart(2, '0')));
+      ep.title = 'Écart heures pointées − planning depuis lundi, au ' + EC.au.slice(8) + '/' + EC.au.slice(5, 7); nm0.append(ep); }
     if (isT && r.tel) { nm0.classList.add('cl'); nm0.title = 'Voir le numéro'; ln.onclick = function () { TELO = TELO === r.nom ? null : r.nom; rendre(); }; }
     var h = el('div', 'h'); if (syn) h.append(el('i', '', 'Synergy')); h.append(hTxt(r.h)); ln.append(h);
     var tl = el('div', 'tl');
@@ -157,7 +163,7 @@
       var np = groupe(main, 'Encadrants', E, isT, nm) + groupe(main, 'Équipiers', S, isT, nm);
       if (isT) c2.firstChild.textContent = np;
     }
-    main.append(el('div', 'maj', D.maj ? 'Planning envoyé par le TDB le ' + D.maj + (isT ? ' · les personnes pas sur le terrain à cette heure sont grisées' : '') + ' · // = pause à prendre (shift de plus de 5 h)' : ''));
+    main.append(el('div', 'maj', D.maj ? 'Planning envoyé par le TDB le ' + D.maj + (isT ? ' · les personnes pas sur le terrain à cette heure sont grisées' : '') + ' · // = pause à prendre (shift de plus de 5 h)' + (D.infos && D.infos.ecarts ? ' · à côté du nom : heures pointées − planning depuis lundi, au ' + D.infos.ecarts.au.slice(8) + '/' + D.infos.ecarts.au.slice(5, 7) + ' (rouge = plus que prévu)' : '') : ''));
   }
 
 

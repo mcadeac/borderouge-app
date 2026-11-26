@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Réclamations clients · Borderouge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e4002b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Borderouge">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="app.css?v=202611252130">
+<script src="config.js?v=202611252130"></script>
+<script src="app.js?v=202611252130"></script>
+<style>
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font:17px/1.4 Roboto, -apple-system, "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+  header { display:flex; align-items:center; }
+  header .tt { display:flex; flex-direction:column; line-height:1.15; flex:1; }
+  .tabs { position:sticky; top:0; z-index:5; overflow-x:auto; }
+  .tabs .seg { display:flex; }
+  .tabs button { white-space:nowrap; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:4px 16px 50px; }
+  .nouv { display:flex; width:100%; justify-content:center; align-items:center; gap:8px; margin:14px 0 4px; font:inherit; font-weight:700; font-size:18px; background:var(--red); color:#fff; border:0; border-radius:28px; padding:14px; cursor:pointer; }
+  .frm { background:#fff; border:3px solid var(--ink); border-radius:18px; padding:16px; margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .frm[hidden] { display:none; }
+  .frm .rw { display:flex; gap:12px; flex-wrap:wrap; }
+  .frm label { flex:1; min-width:200px; font-size:13px; color:#5c5c5c; font-weight:700; display:flex; flex-direction:column; gap:4px; }
+  .frm label b { color:var(--red); }
+  .frm input, .frm textarea { font:inherit; font-size:17px; padding:10px 12px; border:2px solid #d0d0d0; border-radius:12px; background:#fff; color:var(--ink); width:100%; }
+  .frm textarea { min-height:64px; resize:vertical; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chips button { font:inherit; font-size:14px; font-weight:700; border:2px solid #d0d0d0; background:#fff; border-radius:20px; padding:6px 12px; cursor:pointer; color:var(--ink); }
+  .frm .bas { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .frm .msg { color:var(--red); font-size:14px; }
+  .frm .go { font:inherit; font-weight:700; font-size:17px; background:var(--red); color:#fff; border:0; border-radius:28px; padding:12px 28px; cursor:pointer; }
+  .frm .no { font:inherit; font-weight:700; font-size:15px; background:#fff; color:var(--ink); border:2px solid var(--ink); border-radius:28px; padding:10px 20px; cursor:pointer; }
+  .rech { margin:16px 0 6px; }
+  .rech input { font:inherit; font-size:16px; width:100%; padding:10px 14px; border:2px solid #d0d0d0; border-radius:24px; background:#fff; }
+  .lst { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+  .rc { background:#fff; border-radius:14px; border-left:8px solid var(--red); padding:12px 14px; display:grid; grid-template-columns:1fr auto; gap:6px 14px; }
+  .rc.ok { border-left-color:#137a37; opacity:.8; }
+  .rc.att { opacity:.55; }
+  .rc .h { font-weight:700; font-size:18px; }
+  .rc .h span { font-weight:400; font-size:14px; color:#5c5c5c; margin-left:6px; }
+  .rc .d { grid-column:1; font-size:15px; line-height:1.4; }
+  .rc .d b { font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#5c5c5c; margin-right:4px; }
+  .rc .p { grid-column:1 / -1; font-size:12.5px; color:#5c5c5c; }
+  .rc .ck { grid-column:2; grid-row:1 / span 3; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-width:96px; border:2px solid #d0d0d0; border-radius:14px; padding:8px; cursor:pointer; font-size:12.5px; font-weight:700; text-align:center; background:#fff; font-family:inherit; color:var(--ink); }
+  .rc .ck i { font-style:normal; width:30px; height:30px; border:3px solid var(--ink); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .rc.ok .ck { border-color:#137a37; color:#137a37; } .rc.ok .ck i { background:#137a37; border-color:#137a37; color:#fff; }
+  .vide, .err { background:#fff; border-radius:12px; padding:22px; margin-top:12px; text-align:center; color:#5c5c5c; }
+  .err { color:var(--red); }
+  @media (max-width:600px) { .rc { grid-template-columns:1fr; } .rc .ck { grid-column:1; grid-row:auto; flex-direction:row; justify-content:flex-start; } }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css?v=202611252130">
+</head>
+<body data-app="reclamations">
+<header>
+  <img alt="KFC" src="logo.png">
+  <div class="tt"><b>Réclamations clients</b><span>Clients qui contactent le restaurant · KFC Toulouse Borderouge</span></div>
+</header>
+<div class="stripes"></div>
+<nav class="tabs"><div class="seg" id="tabs"></div></nav>
+<main>
+  <button type="button" class="nouv" id="nouv">＋ Nouvelle réclamation</button>
+  <form class="frm" id="frm" hidden autocomplete="off">
+    <div class="rw">
+      <label>Nom du client <b>*</b><input id="f-nom" maxlength="80" placeholder="Nom et prénom"></label>
+      <label>Saisi par<input id="f-par" maxlength="40" placeholder="Ton prénom"></label>
+    </div>
+    <div class="rw">
+      <label>Date de la commande<input type="date" id="f-date"></label>
+      <label>N° de commande<input id="f-cmd" maxlength="40" placeholder="Ex. 4521 ou A194B"></label>
+    </div>
+    <label>Ce qui manquait <b>*</b><textarea id="f-manque" maxlength="500" placeholder="Ex. 1 Tenders x5 et la sauce Barbecue"></textarea></label>
+    <label>Offre proposée<input id="f-offre" maxlength="200" placeholder="Ex. menu offert au prochain passage"></label>
+    <div class="chips" id="chips"></div>
+    <div class="bas"><span class="msg" id="f-msg"></span><span style="display:flex;gap:8px"><button type="button" class="no" id="f-no">Annuler</button><button type="submit" class="go" id="f-go">Enregistrer</button></span></div>
+  </form>
+  <div class="rech"><input type="search" id="rech" placeholder="Rechercher un nom, un n° de commande…" aria-label="Rechercher"></div>
+  <div class="lst" id="lst"><div class="vide">Chargement…</div></div>
+</main>
+<script>
+(function () {
+  var D = null, F = 'att', Q = '';
+  var OFFRES = ['Produit manquant offert au prochain passage', 'Menu offert au prochain passage', 'Remboursement', 'Rien (pas de solution)'];
+  function $(id) { return document.getElementById(id); }
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function auj() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function fr(d) { return d && /^\d{4}-\d\d-\d\d$/.test(d) ? d.slice(8) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : (d || ''); }
+  function norm(x) { return String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+
+  function onglets() {
+    var n = (D || []).filter(function (r) { return !r.revenu; }).length, box = $('tabs'); box.innerHTML = '';
+    [['att', 'À traiter (' + n + ')'], ['ok', 'Client revenu'], ['tout', 'Toutes']].forEach(function (x) {
+      var b = el('button', '', x[1]); b.type = 'button'; b.setAttribute('aria-selected', String(F === x[0])); b.onclick = function () { F = x[0]; onglets(); liste(); }; box.append(b); });
+  }
+  function liste() {
+    var box = $('lst'); box.innerHTML = '';
+    if (!D) return;
+    var L = D.filter(function (r) { return F === 'tout' || (F === 'ok' ? !!r.revenu : !r.revenu); })
+      .filter(function (r) { return !Q || norm([r.nom, r.cmd, r.manque, r.offre, r.par].join(' ')).indexOf(norm(Q)) >= 0; })
+      .sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || (b.saisie || '').localeCompare(a.saisie || ''); });
+    if (!L.length) { box.append(el('div', 'vide', Q ? 'Aucune réclamation trouvée.' : F === 'att' ? 'Aucune réclamation à traiter.' : 'Aucune réclamation.')); return; }
+    L.forEach(function (r) {
+      var c = el('div', 'rc' + (r.revenu ? ' ok' : '') + (r.att ? ' att' : '')), h = el('div', 'h', r.nom);
+      h.append(el('span', '', [r.date ? 'commande du ' + fr(r.date) : '', r.cmd ? 'n° ' + r.cmd : ''].filter(Boolean).join(' · ')));
+      var d1 = el('div', 'd'); d1.append(el('b', '', 'Manquant'), document.createTextNode(r.manque));
+      var d2 = el('div', 'd'); d2.append(el('b', '', 'Offre'), document.createTextNode(r.offre || '—'));
+      var ck = el('button', 'ck'); ck.type = 'button'; ck.append(el('i', '', r.revenu ? '✓' : ''), el('span', '', r.revenu ? 'Client revenu le ' + r.revenu.slice(0, 5) : 'Client revenu ?'));
+      ck.title = r.revenu ? 'Touche pour décocher' : 'Coche quand le client est revenu et que la réclamation est réglée';
+      ck.onclick = function () { if (r.att) return; if (r.revenu && !confirm('Décocher « client revenu » pour ' + r.nom + ' ?')) return; cocher(r, !r.revenu); };
+      c.append(h, ck, d1, d2, el('div', 'p', 'Saisie le ' + (r.saisie || '…') + (r.par ? ' par ' + r.par : '')));
+      box.append(c);
+    });
+  }
+  function cocher(r, v) {
+    var av = r.revenu; r.revenu = v ? (function () { var d = new Date(); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); })() : ''; r.att = true; onglets(); liste();
+    BR.srv('formation', 'traiterRecla', { id: r.id, revenu: v }).then(function (x) { r.att = false; r.revenu = x && x.revenu != null ? x.revenu : r.revenu; BR.majCache('formation', 'getReclas', D); onglets(); liste(); })
+      .catch(function (e) { r.att = false; r.revenu = av; onglets(); liste(); alert('Pas enregistré : ' + e.message); });
+  }
+  function form(ouvrir) {
+    $('frm').hidden = !ouvrir; $('nouv').hidden = ouvrir; $('f-msg').textContent = '';
+    if (ouvrir) { $('f-nom').value = ''; $('f-cmd').value = ''; $('f-manque').value = ''; $('f-offre').value = ''; $('f-date').value = auj(); try { $('f-par').value = localStorage.getItem('br_recla_par') || ''; } catch (e) {} $('f-nom').focus(); }
+  }
+  $('nouv').onclick = function () { form(true); };
+  $('f-no').onclick = function () { form(false); };
+  OFFRES.forEach(function (o) { var b = el('button', '', o); b.type = 'button'; b.onclick = function () { $('f-offre').value = o; }; $('chips').append(b); });
+  $('frm').onsubmit = function (e) {
+    e.preventDefault();
+    var r = { nom: $('f-nom').value.trim(), date: $('f-date').value, cmd: $('f-cmd').value.trim(), manque: $('f-manque').value.trim(), offre: $('f-offre').value.trim(), par: $('f-par').value.trim(), id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+    if (!r.nom) { $('f-msg').textContent = 'Indique le nom du client.'; $('f-nom').focus(); return; }
+    if (!r.manque) { $('f-msg').textContent = 'Indique ce qui manquait.'; $('f-manque').focus(); return; }
+    try { localStorage.setItem('br_recla_par', r.par); } catch (x) {}
+    var d = new Date(); r.saisie = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); r.revenu = ''; r.att = true;
+    D = (D || []).concat([r]); form(false); F = 'att'; onglets(); liste();
+    BR.srv('formation', 'enregistrerRecla', r).then(function () { r.att = false; BR.majCache('formation', 'getReclas', D); liste(); })
+      .catch(function (er) { D = D.filter(function (x) { return x !== r; }); onglets(); liste(); form(true); ['nom', 'date', 'cmd', 'manque', 'offre', 'par'].forEach(function (k) { $('f-' + k).value = r[k]; });
+        $('f-msg').textContent = /Fonction inconnue/.test(er.message) ? 'Le script CLO LENBOR doit être mis à jour (réclamations).' : 'Pas enregistrée : ' + er.message + '. Réessaie.'; });
+  };
+  $('rech').oninput = function () { Q = this.value.trim(); liste(); };
+  function afficher(d) { var enCours = (D || []).filter(function (r) { return r.att; }); D = (d || []).concat(enCours.filter(function (r) { return !(d || []).some(function (x) { return x.id === r.id; }); })); onglets(); liste(); }
+  BR.charge('formation', 'getReclas', afficher, afficher).catch(function (e) {
+    if (D) return; $('lst').innerHTML = ''; $('lst').append(el('div', 'err', /Fonction inconnue/.test(e.message) ? 'Le script « CLO LENBOR » doit être mis à jour (réclamations clients).' : 'Réclamations indisponibles : ' + e.message));
+  });
+  onglets();
+})();
+</script>
+</body>
+</html>

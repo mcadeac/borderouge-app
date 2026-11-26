@@ -137,6 +137,10 @@
       <div class="lg"><em>Rupture</em> Borne</div>
       <div><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#e4002b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6"/><circle cx="12" cy="17" r="1.2"/></svg><br><span>Ouvrir le back-office des bornes ›</span></div>
     </a>
+    <a class="mini" href="reclamations.html" title="Réclamations des clients qui contactent le restaurant">
+      <div class="lg"><em>Client</em> Réclamation</div>
+      <div><b class="r" id="rc-n">–</b><br><span id="rc-sous">à traiter</span></div>
+    </a>
   </div>
   <div class="ov" id="ov-uber" hidden><div class="pn" role="dialog" aria-label="Réclamations Uber à contester">
     <div class="hd"><b>Uber · commandes à refaire</b><button type="button" id="ov-x" aria-label="Fermer">×</button></div>
@@ -258,6 +262,10 @@
   document.getElementById('ca').onclick = function () { OUV = !OUV; rendreInfos(INF); };
   document.getElementById('uber').onclick = ouvrirUber; document.getElementById('ov-x').onclick = fermerUber;
   document.getElementById('ov-uber').onclick = function (e) { if (e.target === this) fermerUber(); };
+  // Réclamations des clients : nombre à traiter (client pas encore revenu)
+  BR.charge('formation', 'getReclas', function (L) { var n = (L || []).filter(function (r) { return !r.revenu; }).length;
+    document.getElementById('rc-n').textContent = n; document.getElementById('rc-sous').textContent = n ? 'à traiter (client pas revenu)' : 'rien à traiter'; })
+    .catch(function () { document.getElementById('rc-n').textContent = '+'; document.getElementById('rc-sous').textContent = 'saisir une réclamation'; });
   // Planning (envoyé par le TDB) : personnes au planning aujourd'hui et sur le terrain maintenant
   BR.charge('formation', 'getPlanning', function (D) {
     rendreInfos(D.infos);

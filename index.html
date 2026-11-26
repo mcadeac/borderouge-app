@@ -44,7 +44,40 @@
   .rem .vide { opacity:.9; font-size:16px; }
   .foot { color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
   .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
-  @media (max-width:600px) { .top { height:180px; } .logo { width:120px; height:120px; } .logo img { width:90px; height:90px; } .nums { display:none; } .tx b { font-size:28px; } .ic { width:64px; height:64px; } }
+  .ca { background:var(--ink); color:#fff; border-radius:22px; padding:16px 22px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .ca .big { flex:1; min-width:200px; }
+  .ca .big span, .ca .hi span { display:block; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:#bdbdbd; font-weight:700; }
+  .ca .big b { font-family:Oswald, sans-serif; font-weight:700; font-size:50px; line-height:1.05; }
+  .ca .big i { font-style:normal; font-size:15px; color:#e6e6e6; display:block; }
+  .ca .hi { border-left:2px solid #444; padding-left:18px; }
+  .ca .hi b { font-family:Oswald, sans-serif; font-weight:600; font-size:30px; line-height:1.1; }
+  .ca .hi i { font-style:normal; font-size:14px; display:block; }
+  .ca .up { color:#5fd38a; } .ca .dn { color:#ff7d8f; }
+  .minis { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
+  .mini { aspect-ratio:1 / 1; max-height:190px; border:3px solid var(--ink); border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; cursor:pointer; text-align:left; font:inherit; color:inherit; }
+  .mini:active { transform:scale(.98); }
+  .mini .lg { display:flex; align-items:center; gap:8px; font-family:Oswald, sans-serif; font-weight:700; font-size:20px; text-transform:uppercase; }
+  .mini .lg em { font-style:normal; background:#000; color:#fff; border-radius:8px; padding:2px 8px; font-size:15px; letter-spacing:.5px; }
+  .mini b { font-family:Oswald, sans-serif; font-weight:700; font-size:54px; line-height:1; }
+  .mini b.r { color:var(--red); }
+  .mini span { font-size:14px; color:var(--mut); }
+  .ov { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; display:flex; justify-content:center; align-items:flex-start; overflow:auto; padding:24px 14px; }
+  .ov[hidden] { display:none; }
+  .ov .pn { background:#fff; border-radius:22px; max-width:900px; width:100%; overflow:hidden; }
+  .ov .hd { background:#000; color:#fff; padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; }
+  .ov .hd b { font-family:Oswald, sans-serif; font-size:24px; text-transform:uppercase; flex:1; }
+  .ov .hd button { font:inherit; font-size:28px; line-height:1; background:none; border:0; color:#fff; cursor:pointer; }
+  .ov .sb { padding:12px 20px 0; color:var(--mut); font-size:14px; }
+  .ov .cards { padding:12px 20px 20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; }
+  .cd { border:2px solid #cfcfcf; border-radius:14px; overflow:hidden; }
+  .cd .h { background:#f1f1f1; border-left:6px solid var(--red); padding:8px 12px; display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .cd .h b { font-family:Oswald, sans-serif; font-size:28px; letter-spacing:1px; }
+  .cd .h span { font-size:13px; color:#555; text-align:right; }
+  .cd ul { margin:0; padding:10px 12px 12px 30px; font-size:16px; line-height:1.35; }
+  .cd .k { font-size:12px; color:var(--mut); padding:0 12px 10px; }
+  .cd .k.urg { color:var(--red); font-weight:700; }
+  .ov .vide { padding:30px; text-align:center; color:var(--mut); }
+  @media (max-width:600px) { .ca .big b { font-size:40px; } .ca .hi { border-left:0; padding-left:0; } .minis { grid-template-columns:1fr 1fr; } .mini b { font-size:42px; } .top { height:180px; } .logo { width:120px; height:120px; } .logo img { width:90px; height:90px; } .nums { display:none; } .tx b { font-size:28px; } .ic { width:64px; height:64px; } }
 </style>
 <script src="config.js?v=202611252130"></script>
 <script src="app.js?v=202611252130"></script>
@@ -53,6 +86,7 @@
 <div class="top"><div class="logo"><img src="logo.png" alt="KFC"></div></div>
 <div class="ti"><b>Borderouge</b><span id="date"></span></div>
 <main>
+  <section class="ca" id="ca" hidden></section>
   <a class="tile" href="formation.html">
     <div class="ic"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
     <div class="tx"><b>Formation</b><span>CLO · QCM · suivi</span></div>
@@ -69,6 +103,16 @@
     <div class="nums"><div><b id="p-tot">–</b><span>au planning</span></div><div class="r"><b id="p-now">–</b><span>sur le terrain</span></div></div>
   </a>
   <section class="rem" aria-live="polite"><h2>À ne pas oublier</h2><div id="rem"><div class="vide">Chargement…</div></div></section>
+  <div class="minis">
+    <button type="button" class="mini" id="uber" title="Commandes Uber à refaire et photographier pour contester">
+      <div class="lg"><em>Uber</em> Réclamations</div>
+      <div><b class="r" id="u-n">–</b><br><span id="u-sous">à contester</span></div>
+    </button>
+  </div>
+  <div class="ov" id="ov-uber" hidden><div class="pn" role="dialog" aria-label="Réclamations Uber à contester">
+    <div class="hd"><b>Uber · commandes à refaire</b><button type="button" id="ov-x" aria-label="Fermer">×</button></div>
+    <div class="sb" id="ov-sb"></div><div class="cards" id="ov-cards"></div>
+  </div></div>
   <div class="foot">
     <span>Astuce : Partager › « Sur l'écran d'accueil » pour l'ouvrir comme une application.</span>
     <button type="button" id="oubli">Changer le code restaurant</button>
@@ -116,8 +160,46 @@
     q7.filter(function (x) { return x.res === 'Raté'; }).slice(0, 2).forEach(function (x) { R.push({ t: 'QCM ' + x.qcm + ' raté par ' + x.prenom + ' ' + x.nom + ' (' + String(x.date).slice(0, 5) + ') — à repasser', src: 'Formation', h: 'formation.html' }); });
     REM.formation = R; rendreRem();
   }).catch(function (e) { document.getElementById('f-qcm').textContent = '?'; REM.formation = [{ t: 'Formation : ' + e.message, src: 'Formation', h: 'formation.html' }]; rendreRem(); });
+  // CA du jour et réclamations Uber (envoyés par le TDB dans l'onglet « Infos app »)
+  var EUR = function (v) { return Math.round(v).toLocaleString('fr-FR') + ' €'; }, PCT = function (a, b) { var p = (a / b - 1) * 100; return (p >= 0 ? '+' : '−') + Math.abs(p).toFixed(1).replace('.', ',') + ' %'; };
+  var UB = [];
+  function rendreInfos(I) {
+    var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), box = document.getElementById('ca');
+    var C = I && I.ca && I.ca.date === t ? I.ca : null; box.innerHTML = ''; box.hidden = !C;
+    if (C) {
+      var g = el('div', 'big'); g.append(el('span', '', "CA prévu aujourd'hui"), el('b', '', C.prev != null ? EUR(C.prev) : '—'));
+      if (C.n1) { var i = el('i', '', 'N-1 même jour : ' + EUR(C.n1) + (C.prev ? ' (' + PCT(C.prev, C.n1) + ')' : '')); g.append(i); }
+      box.append(g);
+      var H = C.hier || {}; if (H.ca != null) { var h = el('div', 'hi'); h.append(el('span', '', 'Hier, réalisé'), el('b', '', EUR(H.ca)));
+        if (H.prev) { var x = el('i', H.ca >= H.prev ? 'up' : 'dn', (H.ca >= H.prev ? '▲ ' : '▼ ') + PCT(H.ca, H.prev) + ' vs prévu (' + EUR(H.prev) + ')'); h.append(x); }
+        if (H.n1) h.append(el('i', '', PCT(H.ca, H.n1) + ' vs N-1'));
+        box.append(h); }
+    }
+    var R = I && I.recla ? I.recla.list || [] : []; UB = R;
+    var tot = R.reduce(function (a, r) { return a + (r.m || 0); }, 0);
+    document.getElementById('u-n').textContent = R.length;
+    document.getElementById('u-sous').textContent = R.length ? 'à contester · ' + tot.toFixed(2).replace('.', ',') + ' € retenus' : 'rien à contester';
+    document.getElementById('ov-sb').textContent = I && I.maj ? 'Liste envoyée par le TDB le ' + I.maj + (I.recla && I.recla.releve ? ' · relevé Uber du ' + I.recla.releve.split('-').reverse().join('/') : '') + '. La plus ancienne en premier : à refaire, photographier, contester.' : '';
+  }
+  function ouvrirUber() {
+    var c = document.getElementById('ov-cards'), j0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()); c.innerHTML = '';
+    if (!UB.length) c.append(el('div', 'vide', 'Aucune réclamation à contester.'));
+    UB.forEach(function (r) {
+      var d = r.d.split('-'), cd = el('div', 'cd'), h = el('div', 'h');
+      h.append(el('b', '', r.id), el('span', '', d[2] + '/' + d[1] + ' · ' + (r.h || '') + (r.m ? ' · ' + r.m.toFixed(2).replace('.', ',') + ' €' : '')));
+      var ul = el('ul'); [].concat(r.b || []).forEach(function (x) { ul.append(el('li', '', x)); });
+      var lim = new Date(+d[0], +d[1] - 1, +d[2] + 30), rest = Math.round((lim - j0) / 864e5);
+      cd.append(h, ul, el('div', 'k' + (rest <= 5 ? ' urg' : ''), (r.k ? r.k + ' · ' : '') + (rest <= 0 ? 'dernier jour pour contester' : 'encore ' + rest + ' jour' + (rest > 1 ? 's' : '') + ' pour contester')));
+      c.append(cd);
+    });
+    document.getElementById('ov-uber').hidden = false; document.body.style.overflow = 'hidden';
+  }
+  function fermerUber() { document.getElementById('ov-uber').hidden = true; document.body.style.overflow = ''; }
+  document.getElementById('uber').onclick = ouvrirUber; document.getElementById('ov-x').onclick = fermerUber;
+  document.getElementById('ov-uber').onclick = function (e) { if (e.target === this) fermerUber(); };
   // Planning (envoyé par le TDB) : personnes au planning aujourd'hui et sur le terrain maintenant
   BR.charge('formation', 'getPlanning', function (D) {
+    rendreInfos(D.infos);
     var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), d = new Date(), m = d.getHours() * 60 + d.getMinutes(); if (m < 300) m += 1440;
     var J = (D.rows || []).filter(function (r) { return r.date === t && (r.statut === 'travail' || r.statut === 'Synergy'); });
     var hm = function (h, mi) { h = +h; return (h < 6 ? h + 24 : h) * 60 + +mi; };

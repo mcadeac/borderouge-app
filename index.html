@@ -53,6 +53,15 @@
   .ca .hi b { font-family:Oswald, sans-serif; font-weight:600; font-size:30px; line-height:1.1; }
   .ca .hi i { font-style:normal; font-size:14px; display:block; }
   .ca .up { color:#5fd38a; } .ca .dn { color:#ff7d8f; }
+  .ca { cursor:pointer; }
+  .ca .more { flex-basis:100%; font-size:13px; color:#bdbdbd; margin-top:-6px; }
+  .ca .hrs { flex-basis:100%; display:grid; grid-template-columns:1fr; max-width:560px; gap:4px; border-top:2px solid #444; padding-top:12px; }
+  .ca .hrs div { display:grid; grid-template-columns:44px 1fr; align-items:center; gap:8px; font-size:15px; }
+  .ca .hrs div b { font-family:Oswald, sans-serif; font-weight:600; font-size:17px; }
+  .ca .hrs div span { position:relative; height:22px; display:flex; align-items:center; }
+  .ca .hrs div span i { position:absolute; left:0; top:3px; bottom:3px; background:#3a3a3a; border-radius:4px; }
+  .ca .hrs div span em { position:relative; font-style:normal; font-weight:700; padding-left:6px; }
+  .ca .hrs div.now b { color:var(--red); } .ca .hrs div.now span i { background:var(--red); }
   .minis { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
   .mini { aspect-ratio:1 / 1; gap:8px; border:3px solid var(--ink); border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; cursor:pointer; text-align:left; font:inherit; color:inherit; }
   .mini:active { transform:scale(.98); }
@@ -165,8 +174,9 @@
   }).catch(function (e) { document.getElementById('f-qcm').textContent = '?'; REM.formation = [{ t: 'Formation : ' + e.message, src: 'Formation', h: 'formation.html' }]; rendreRem(); });
   // CA du jour et réclamations Uber (envoyés par le TDB dans l'onglet « Infos app »)
   var EUR = function (v) { return Math.round(v).toLocaleString('fr-FR') + ' €'; }, PCT = function (a, b) { var p = (a / b - 1) * 100; return (p >= 0 ? '+' : '−') + Math.abs(p).toFixed(1).replace('.', ',') + ' %'; };
-  var UB = [];
+  var UB = [], OUV = false, INF = null;
   function rendreInfos(I) {
+    INF = I;
     var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), box = document.getElementById('ca');
     var C = I && I.ca && I.ca.date === t ? I.ca : null; box.innerHTML = ''; box.hidden = !C;
     if (C) {
@@ -177,6 +187,12 @@
         if (H.prev) { var x = el('i', H.ca >= H.prev ? 'up' : 'dn', (H.ca >= H.prev ? '▲ ' : '▼ ') + PCT(H.ca, H.prev) + ' vs prévu (' + EUR(H.prev) + ')'); h.append(x); }
         if (H.n1) h.append(el('i', '', PCT(H.ca, H.n1) + ' vs N-1'));
         box.append(h); }
+      if (C.h && C.h.length) {
+        box.append(el('div', 'more', OUV ? '▴ Masquer la répartition' : '▾ Touche pour voir le CA prévu heure par heure'));
+        if (OUV) { var hr = el('div', 'hrs'), mx = Math.max.apply(null, C.h.map(function (x) { return x[1]; })), hn = new Date().getHours();
+          C.h.forEach(function (x) { var r = el('div', +x[0] === hn ? 'now' : ''), sp = el('span'), i = el('i'); i.style.width = Math.round(x[1] / mx * 100) + '%'; sp.append(i, el('em', '', EUR(x[1]))); r.append(el('b', '', +x[0] + 'h'), sp); hr.append(r); });
+          box.append(hr); }
+      }
     }
     var R = I && I.recla ? I.recla.list || [] : []; UB = R;
     var tot = R.reduce(function (a, r) { return a + (r.m || 0); }, 0);
@@ -198,6 +214,7 @@
     document.getElementById('ov-uber').hidden = false; document.body.style.overflow = 'hidden';
   }
   function fermerUber() { document.getElementById('ov-uber').hidden = true; document.body.style.overflow = ''; }
+  document.getElementById('ca').onclick = function () { OUV = !OUV; rendreInfos(INF); };
   document.getElementById('uber').onclick = ouvrirUber; document.getElementById('ov-x').onclick = fermerUber;
   document.getElementById('ov-uber').onclick = function (e) { if (e.target === this) fermerUber(); };
   // Planning (envoyé par le TDB) : personnes au planning aujourd'hui et sur le terrain maintenant

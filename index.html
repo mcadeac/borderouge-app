@@ -62,6 +62,12 @@
   .ca .hrs div span i { position:absolute; left:0; top:3px; bottom:3px; background:#3a3a3a; border-radius:4px; }
   .ca .hrs div span em { position:relative; font-style:normal; font-weight:700; padding-left:6px; }
   .ca .hrs div.now b { color:var(--red); } .ca .hrs div.now span i { background:var(--red); }
+  .msgs { background:#fff; border:3px solid var(--ink); border-radius:22px; overflow:hidden; }
+  .msgs .mh { background:var(--ink); color:#fff; font-family:Oswald, sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:15px; padding:8px 18px; }
+  .msgs .m { padding:12px 18px; font-size:18px; line-height:1.35; border-top:1px solid var(--line); white-space:pre-wrap; }
+  .msgs .mh + .m { border-top:0; }
+  .msgs .m.imp { background:#fdebee; color:#8a0016; font-weight:700; border-left:8px solid var(--red); }
+  .msgs .m.imp::before { content:"⚠ "; }
   .minis { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
   .mini { aspect-ratio:1 / 1; gap:8px; border:3px solid var(--ink); border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; cursor:pointer; text-align:left; font:inherit; color:inherit; }
   .mini:active { transform:scale(.98); }
@@ -104,6 +110,7 @@
 <div class="top"><div class="logo"><img src="logo.png" alt="KFC"></div></div>
 <div class="ti"><b>Borderouge</b><span id="date"></span></div>
 <main>
+  <section class="msgs" id="msgs" hidden></section>
   <section class="ca" id="ca" hidden></section>
   <a class="tile" href="formation.html">
     <div class="ic"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
@@ -189,6 +196,11 @@
   var UB = [], OUV = false, INF = null;
   function rendreInfos(I) {
     INF = I;
+    // messages du directeur (encart « Messages pour l'app » de l'accueil du TDB) : ceux du jour
+    var tj = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), wd = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'][now.getDay()], mb = document.getElementById('msgs');
+    var M = (I && I.msgs || []).filter(function (m) { return m.du <= tj && tj <= m.au && (!m.j || !m.j.length || m.j.indexOf(wd) >= 0); }).sort(function (a, b) { return (b.imp ? 1 : 0) - (a.imp ? 1 : 0); });
+    mb.innerHTML = ''; mb.hidden = !M.length;
+    if (M.length) { mb.append(el('div', 'mh', 'Message' + (M.length > 1 ? 's' : '') + ' du directeur')); M.forEach(function (m) { mb.append(el('div', 'm' + (m.imp ? ' imp' : ''), m.t)); }); }
     var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), box = document.getElementById('ca');
     var C = I && I.ca && I.ca.date === t ? I.ca : null; box.innerHTML = ''; box.hidden = !C;
     if (C) {

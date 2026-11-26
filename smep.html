@@ -70,6 +70,13 @@
   .yn.n.on { background:var(--ko); border-color:var(--ko); color:#fff; }
   .yn:disabled { opacity:.5; }
   .yn.u { min-width:44px; font-size:18px; color:var(--mut); background:#fff; }
+  .yn.c { min-width:52px; font-size:13px; }
+  .yn.c.on { background:#6b6b6b; border-color:#6b6b6b; color:#fff; }
+  .task.nc { border-left-color:#9a9a9a; background:repeating-linear-gradient(45deg,#f7f7f7 0 8px,#efefef 8px 16px); }
+  .task.nc .txt { color:#777; }
+  .task.nc .tt { text-decoration:line-through; text-decoration-color:#999; }
+  .task.nc .who { color:#666; font-weight:700; }
+  .cell.nc { background:repeating-linear-gradient(45deg,#e4e4e4 0 4px,#cfcfcf 4px 8px); color:#555; font-weight:800; }
   .sync { display:block; font-size:12px; font-weight:700; color:var(--ok); min-height:16px; }
   .sync.on { color:var(--wait); }
   .ko-box { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
@@ -152,6 +159,10 @@
   .pg .sl { display:flex; height:10px; gap:2px; }
   .pg .sl span { flex:1; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:700; overflow:hidden; white-space:nowrap; }
   .pg .ko { color:#c00000; } .pg .corr { color:#b06b00; }
+  .pg span.nc { background:repeating-linear-gradient(45deg,#ffffff 0 2px,#9a9a9a 2px 3px) !important; color:#333; font-weight:700; }
+  .pg .l.ncl { position:relative; }
+  .pg .l.ncl .t { color:#666; }
+  .pg .l.ncl::after { content:""; position:absolute; left:2px; right:2px; top:50%; border-top:1px solid #444; }
   .pg .an2 { font-size:7.5px; line-height:1.3; padding:2px 0; border-bottom:1px solid #d9e2f3; }
   .pg .visa { flex:1; border:1px solid #8eaadb; height:34px; font-size:7.5px; padding:2px 4px; }
 </style>
@@ -219,10 +230,17 @@ function lignes(code, per) {
   return D.rows.filter(function (r) { return r.code === code && (per == null || r.p === per); }).sort(function (a, b) { return a.ts < b.ts ? -1 : 1; });
 }
 function bon(r) { return r.res === 'OK' || r.st === 'Corrigé'; }
+/* « Non concerné » (26/11) : reste valable pour les périodes suivantes tant qu'aucune autre saisie n'est faite sur la tâche
+   (ex. pas d'aire de jeux) ; « Redevient concerné » annule la saisie N/C. Renvoie la saisie N/C en vigueur pour cette période, sinon null. */
+var NC = 'Non concerné';
+function ncAvant(code, per) {
+  var L = D.rows.filter(function (r) { return r.code === code && r.p <= per; }).sort(function (a, b) { return a.p === b.p ? (a.ts < b.ts ? -1 : 1) : (a.p < b.p ? -1 : 1); });
+  var l = L[L.length - 1]; return l && l.res === NC ? l : null;
+}
 function etat(task, per) {
-  var L = lignes(task.code, per), last = L[L.length - 1] || null;
+  var L = lignes(task.code, per), last = L[L.length - 1] || null, nc = ncAvant(task.code, per);
   var need = task.f === 'B' ? 2 : 1, nb = L.filter(bon).length;
-  return { L: L, last: last, nb: nb, need: need, done: nb >= need, ko: !!(last && last.res === 'Pas OK' && last.st !== 'Corrigé'), wait: !!(last && last.st === 'En attente technicien') };
+  return { L: L, last: last, nb: nb, need: need, nc: nc, done: nb >= need || !!nc, ko: !nc && !!(last && last.res === 'Pas OK' && last.st !== 'Corrigé'), wait: !nc && !!(last && last.st === 'En attente technicien') };
 }
 function tasksOf(f) {
   if (f === 'R') { var m = dt(D.today).getMonth() + 1; return D.rec.filter(function (r) { return r.mois.indexOf(m) >= 0; }); }
@@ -351,7 +369,8 @@ function rTodo() {
     }
     if (s.f === 'M') {
       var a = etatAire(), c = el('div', 'task' + (a.fait ? ' ok' : '')), r = el('div', 'row'), tx = el('div', 'txt');
-      tx.append(el('b', '', 'Aire de jeux : contrôle mensuel (22 points)'), el('div', 'who', a.fait ? '✓ fait le ' + fr(a.d) + ' · ' + a.ok + ' / 22 OK' : 'à faire ce mois'));
+      if (a.nc) c.className = 'task nc';
+      tx.append(el('b', '', 'Aire de jeux : contrôle mensuel (22 points)'), el('div', 'who', a.nc ? 'Non concerné · depuis le ' + fr(a.d) + ' (' + a.ini + ')' : a.fait ? '✓ fait le ' + fr(a.d) + ' · ' + a.ok + ' / 22 OK' : 'à faire ce mois'));
       r.append(tx, btn('btn' + (a.fait ? ' sec' : ''), a.fait ? 'Voir' : 'Commencer', function () { VIEW = 'spe'; UI.speV = 'aire'; rendre(); window.scrollTo(0, 0); }));
       c.append(r); v.append(c);
     }
@@ -366,6 +385,7 @@ function groupes(list) {
   return out;
 }
 function carte(t, e, per) {
+  if (e.nc) return carteNC(t, e);
   var cls = e.done ? ' ok' : e.wait ? ' wait' : e.ko ? ' ko' : '';
   var c = el('div', 'task' + cls), r = el('div', 'row'), tx = el('div', 'txt');
   if (t.n) tx.append(el('span', 'code', t.n));
@@ -388,7 +408,9 @@ function carte(t, e, per) {
     save([{ f: t.f, code: t.code, app: t.app, t: t.t, res: 'OK', rel: rel ? rel.value : undefined }]);
   });
   var n = btn('yn n' + (e.ko || UI.koOpen[key] ? ' on' : ''), 'Pas OK', function () { UI.koOpen[key] = !UI.koOpen[key]; rendre(); });
-  r.append(y, n);
+  var ncb = btn('yn c', 'N/C', function () { if (e.done && !confirm('Cette tâche est déjà faite pour cette période. La marquer quand même « Non concernée » ?')) return; UI.koOpen[key] = false; save([{ f: t.f, code: t.code, app: t.app, t: t.t, res: NC }]); toast('Marquée « Non concernée » : elle le reste les fois suivantes'); });
+  ncb.title = 'Non concerné (ex. équipement absent du restaurant) : reste valable les périodes suivantes';
+  r.append(y, n, ncb);
   if (last) { var u = btn('yn u', '↺', function () { annulerLignes([last], 'Dernière saisie annulée'); }); u.title = 'Annuler la dernière saisie'; u.setAttribute('aria-label', 'Annuler la dernière saisie'); r.append(u); }
   c.append(r);
   if (UI.koOpen[key]) {
@@ -405,6 +427,15 @@ function carte(t, e, per) {
     setTimeout(function () { com.focus(); }, 30);
   }
   return c;
+}
+
+function carteNC(t, e) {
+  var c = el('div', 'task nc'), r = el('div', 'row'), tx = el('div', 'txt');
+  if (t.n) tx.append(el('span', 'code', t.n));
+  tx.append(el('span', 'tt', t.t));
+  tx.append(el('div', 'who', 'Non concerné · depuis le ' + fr(e.nc.d) + '/' + e.nc.d.slice(2, 4) + ' (' + e.nc.ini + ')'));
+  r.append(tx, btn('btn sec', 'Redevient concerné', function () { annulerLignes([e.nc], 'La tâche est de nouveau à faire'); }));
+  c.append(r); return c;
 }
 
 /* ---------- Calendrier ---------- */
@@ -426,6 +457,8 @@ function colonnes(f, y, m) {
 function cellule(task, col) {
   var L = lignes(task.code, col.p), b = el('button', 'cell');
   b.type = 'button';
+  var nc = col.deb <= D.today ? ncAvant(task.code, col.p) : null;
+  if (nc) { b.classList.add('nc'); b.textContent = 'N/C'; b.title = 'Non concerné depuis le ' + fr(nc.d) + ' (' + nc.ini + ')'; return b; }
   if (!L.length) { if (col.deb > D.today) b.classList.add('fut'); b.textContent = col.deb > D.today ? '' : '·'; return b; }
   var txt = L.slice(-3).map(function (r) { return (r.res === 'OK' ? '' : '✗ ') + fr(r.d) + ' ' + r.ini; }).join('\n');
   b.style.whiteSpace = 'pre-line'; b.textContent = txt;
@@ -468,7 +501,7 @@ function rCal() {
   });
   box.append(tb); v.append(box);
   var lg = el('div', 'legend');
-  [['#cdebd6', 'OK (date et initiales)'], ['#c4001f', 'Pas OK'], ['#fde9b8', 'Pas OK, corrigé depuis'], ['#f1f1f3', 'Pas fait']].forEach(function (x) {
+  [['#cdebd6', 'OK (date et initiales)'], ['#c4001f', 'Pas OK'], ['#fde9b8', 'Pas OK, corrigé depuis'], ['#f1f1f3', 'Pas fait'], ['repeating-linear-gradient(45deg,#e4e4e4 0 4px,#cfcfcf 4px 8px)', 'Non concerné (N/C)']].forEach(function (x) {
     var s = el('span'), i = el('i'); i.style.background = x[0]; s.append(i, document.createTextNode(x[1])); lg.append(s);
   });
   lg.append(el('span', '', 'Touche une case rouge pour voir le commentaire.'));
@@ -538,7 +571,8 @@ function rAno() {
 function etatAire(per) {
   per = per || periode('A', D.today);
   var L = D.rows.filter(function (r) { return r.f === 'Aire de jeux (mensuel)' && r.p === per; });
-  if (!L.length) return { fait: false };
+  if (!L.length) { var N = D.cat.A.map(function (p) { return ncAvant(p.code, per); }); return N.every(Boolean) && N.length ? { fait: true, nc: true, d: N[N.length - 1].d, ini: N[N.length - 1].ini } : { fait: false }; }
+  if (L.every(function (r) { return r.res === NC; })) return { fait: true, nc: true, d: L[L.length - 1].d, ini: L[L.length - 1].ini };
   return { fait: true, d: L[L.length - 1].d, ok: L.filter(function (r) { return r.res === 'OK'; }).length, ini: L[L.length - 1].ini };
 }
 function rSpe() {
@@ -548,9 +582,9 @@ function rSpe() {
   v.append(blocQui());
   // Aire de jeux
   var a = etatAire(), c1 = el('div', 'card sp'), h1 = el('div', 'hd');
-  h1.append(el('b', '', 'Aire de jeux · contrôle mensuel'), el('span', 'pill ' + (a.fait ? 'p-ok' : 'p-wait'), a.fait ? 'Fait le ' + fr(a.d) + ' · ' + a.ok + ' / 22 OK' : MOIS[dt(D.today).getMonth()] + ' : à faire'),
-    btn('btn' + (a.fait ? ' sec' : ''), a.fait ? 'Refaire' : 'Commencer', function () { UI.speV = 'aire'; UI.aire = {}; rSpe(); window.scrollTo(0, 0); }));
-  if (a.fait) h1.append(btn('btn sec', '↺ Annuler', function () {
+  h1.append(el('b', '', 'Aire de jeux · contrôle mensuel'), el('span', 'pill ' + (a.nc ? 'p-mut' : a.fait ? 'p-ok' : 'p-wait'), a.nc ? 'Non concerné depuis le ' + fr(a.d) : a.fait ? 'Fait le ' + fr(a.d) + ' · ' + a.ok + ' / 22 OK' : MOIS[dt(D.today).getMonth()] + ' : à faire'),
+    btn('btn' + (a.fait ? ' sec' : ''), a.nc ? 'Voir' : a.fait ? 'Refaire' : 'Commencer', function () { UI.speV = 'aire'; UI.aire = {}; rSpe(); window.scrollTo(0, 0); }));
+  if (a.fait && !a.nc) h1.append(btn('btn sec', '↺ Annuler', function () {
     var per = periode('A', D.today);
     if (confirm('Annuler le contrôle de l’aire de jeux de ce mois (22 points) ?')) annulerLignes(D.rows.filter(function (r) { return r.f === 'Aire de jeux (mensuel)' && r.p === per; }), 'Contrôle de l’aire de jeux annulé');
   }));
@@ -595,13 +629,24 @@ function rAire(v) {
   var top = el('div', 'segs'); top.append(btn('sg', '‹ Retour', function () { UI.speV = null; rSpe(); }));
   var t = el('span', '', 'Aire de jeux · contrôle de ' + MOIS[dt(D.today).getMonth()]); t.style.cssText = 'font-size:20px;font-weight:900'; top.append(t); v.append(top);
   v.append(blocQui()); v.lastChild.style.marginTop = '12px';
+  var perA = periode('A', D.today), aNC = etatAire(perA);
+  if (aNC.nc) {
+    var cn = el('div', 'task nc'), rn = el('div', 'row'), tn = el('div', 'txt');
+    tn.append(el('b', '', 'Aire de jeux non concernée'), el('div', 'who', 'depuis le ' + fr(aNC.d) + '/' + aNC.d.slice(2, 4) + ' (' + aNC.ini + ') · les 22 points sont rayés sur la version imprimable'));
+    rn.append(tn, btn('btn sec', 'Redevient concernée', function () {
+      var L = D.cat.A.map(function (p) { return ncAvant(p.code, perA); }).filter(Boolean); UI.aire = {}; annulerLignes(L, 'L’aire de jeux est de nouveau à contrôler');
+    }));
+    cn.append(rn); v.append(cn); return;
+  }
+  if (!Object.keys(UI.aire).length) D.cat.A.forEach(function (p) { if (ncAvant(p.code, perA)) UI.aire[p.code] = { r: NC }; });
   var prev = null, n = 0;
   D.cat.A.forEach(function (p) {
     if (p.app !== prev) { v.append(el('div', 'grp', p.app)); prev = p.app; }
-    var st = UI.aire[p.code] || {}, c = el('div', 'task' + (st.r === 'OK' ? ' ok' : st.r === 'Pas OK' ? ' ko' : '')), r = el('div', 'row');
-    r.append(el('div', 'txt', p.t));
+    var st = UI.aire[p.code] || {}, c = el('div', 'task' + (st.r === 'OK' ? ' ok' : st.r === 'Pas OK' ? ' ko' : st.r === NC ? ' nc' : '')), r = el('div', 'row');
+    var tx0 = el('div', 'txt'); tx0.append(el('span', 'tt', p.t)); r.append(tx0);
     r.append(btn('yn y' + (st.r === 'OK' ? ' on' : ''), 'OK', function () { UI.aire[p.code] = { r: 'OK' }; rSpe(); }));
     r.append(btn('yn n' + (st.r === 'Pas OK' ? ' on' : ''), 'Pas OK', function () { UI.aire[p.code] = { r: 'Pas OK', c: st.c || '' }; rSpe(); }));
+    r.append(btn('yn c' + (st.r === NC ? ' on' : ''), 'N/C', function () { UI.aire[p.code] = { r: NC }; rSpe(); }));
     c.append(r);
     if (st.r === 'Pas OK') {
       var i = el('input'); i.type = 'text'; i.placeholder = 'Ce qui ne va pas (obligatoire)'; i.value = st.c || ''; i.style.cssText = 'width:100%;margin-top:10px;border-color:#f3b3bf';
@@ -617,6 +662,10 @@ function rAire(v) {
     save(D.cat.A.map(function (p) { var s = UI.aire[p.code]; return { f: 'A', code: p.code, app: 'Aire de jeux · ' + p.app, t: p.t, res: s.r, com: s.c || '' }; }), function () { UI.aire = {}; UI.speV = null; });
   });
   b.disabled = n < 22; ok.append(b, btn('btn sec', 'Tout OK', function () { D.cat.A.forEach(function (p) { if (!UI.aire[p.code]) UI.aire[p.code] = { r: 'OK' }; }); rSpe(); }));
+  ok.append(btn('btn sec', 'Pas d’aire de jeux (tout non concerné)', function () {
+    if (!confirm('Marquer les 22 points « Non concernés » ? Ça restera ainsi les mois suivants (bouton « Redevient concernée » pour revenir en arrière).')) return;
+    save(D.cat.A.map(function (p) { return { f: 'A', code: p.code, app: 'Aire de jeux · ' + p.app, t: p.t, res: NC }; }), function () { UI.aire = {}; UI.speV = null; });
+  }));
   v.append(ok);
 }
 function rFont(v) {
@@ -691,7 +740,7 @@ function ligneP(r, bg, extra) {
   d.append(t); if (extra !== false) d.append(el('span', 'n', r.task && r.task.n ? r.task.n : ''));
   return d;
 }
-function slotP(r, bg) { var s = el('span'); s.style.background = bg; if (r) { var c = r.res !== 'OK' && r.st === 'Corrigé'; s.textContent = (r.res === 'OK' ? '' : c ? '✗→✓ ' : '✗ ') + fr(r.d) + ' ' + r.ini; if (r.res !== 'OK') s.className = c ? 'corr' : 'ko'; } return s; }
+function slotP(r, bg) { var s = el('span'); s.style.background = bg; if (r && r.res === NC) { s.className = 'nc'; s.textContent = 'N/C'; return s; } if (r) { var c = r.res !== 'OK' && r.st === 'Corrigé'; s.textContent = (r.res === 'OK' ? '' : c ? '✗→✓ ' : '✗ ') + fr(r.d) + ' ' + r.ini; if (r.res !== 'OK') s.className = c ? 'corr' : 'ko'; } return s; }
 function blocP(titre, col, c1, c2, tasks, cols, ym) {
   var a = el('div', 'a'), b = el('div', 'b');
   var ha = el('div', 'hd'); ha.style.background = col; ha.append(el('span', 'c', titre), el('span', 'n', 'N°')); a.append(ha);
@@ -700,9 +749,10 @@ function blocP(titre, col, c1, c2, tasks, cols, ym) {
   blocsPrint(tasks).forEach(function (r) {
     if (r.head || r.pre) k++;
     var bg = k % 2 ? c1 : c2;
-    a.append(ligneP(r, bg));
-    var sl = el('div', 'sl');
-    cols.forEach(function (c) { sl.append(slotP(r.task ? lignes(r.task.code, c.p).slice(-1)[0] : null, bg)); });
+    var lp = ligneP(r, bg); a.append(lp);
+    var sl = el('div', 'sl'), passees = cols.filter(function (c) { return c.deb <= D.today; });
+    if (r.task && passees.length && ncAvant(r.task.code, passees[passees.length - 1].p)) lp.classList.add('ncl');
+    cols.forEach(function (c) { sl.append(slotP(r.task ? (lignes(r.task.code, c.p).slice(-1)[0] || (c.deb <= D.today ? ncAvant(r.task.code, c.p) : null)) : null, bg)); });
     b.append(sl);
   });
   var p = el('div', 'pr'); p.append(a, b); return p;
@@ -734,10 +784,11 @@ function imprimer(y, m) {
   // 2 fois par semaine
   var p2 = el('div', 'pr'), a2 = el('div', 'a'), b2 = el('div', 'b');
   var h2a = el('div', 'hd'); h2a.style.background = '#a5a5a5'; h2a.append(el('span', 'c', '2 fois par semaine'), el('span', 'n', 'N°')); a2.append(h2a);
-  D.cat.B.forEach(function (t) { a2.append(ligneP({ task: t, label: t.t, pre: t.app + ' : ' }, '#dbdbdb')); });
+  var ncB = D.cat.B.length ? ncAvant(D.cat.B[0].code, semaine(new Date(Math.min(dt(D.today), new Date(y, m + 1, 0))))) : null;
+  D.cat.B.forEach(function (t) { var lb = ligneP({ task: t, label: t.t, pre: t.app + ' : ' }, '#dbdbdb'); if (ncB) lb.classList.add('ncl'); a2.append(lb); });
   var h2b = el('div', 'hd'); h2b.style.background = '#a5a5a5'; h2b.append(el('i', 'c', 'Date & Initiales')); b2.append(h2b);
   var sb = el('div', 'sl'), bl = duMois.filter(function (r) { return r.code === 'B01'; }).sort(function (x, y2) { return x.d < y2.d ? -1 : 1; });
-  for (var i = 0; i < Math.max(8, W.length * 2); i++) sb.append(slotP(bl[i] || null, '#dbdbdb'));
+  for (var i = 0; i < Math.max(8, W.length * 2); i++) sb.append(slotP(bl[i] || (ncB && !bl.length ? ncB : null), '#dbdbdb'));
   b2.append(sb); p2.append(a2, b2); L.append(p2);
   L.append(blocP('Hebdomadaires', '#ed7d31', '#f8cbad', '#fbe5d6', D.cat.H, W, ym));
   L.append(blocP('2 fois par mois', '#ff0066', '#ff9999', '#ffcccc', D.cat.Q, Qc, ym));
@@ -750,7 +801,8 @@ function imprimer(y, m) {
     for (var j = 0; j < Math.max(2, part.length); j++) {
       var t = part[j], d = el('div', 'l'); d.style.background = j % 2 ? '#e9dbf4' : '#d5b8ea';
       var s = el('span', 't'); if (t) { s.append(el('b', '', t.app + ' : '), document.createTextNode(t.t)); } d.append(s);
-      var last = t ? lignes(t.code, ym).slice(-1)[0] : null, x = el('span', last && last.res !== 'OK' ? 'ko' : '', last ? (last.res === 'OK' ? '' : '✗ ') + fr(last.d) + ' ' + last.ini : '');
+      var last = t ? (lignes(t.code, ym).slice(-1)[0] || ncAvant(t.code, ym)) : null, x = el('span', last && last.res === NC ? 'nc' : last && last.res !== 'OK' ? 'ko' : '', last ? (last.res === NC ? 'N/C' : (last.res === 'OK' ? '' : '✗ ') + fr(last.d) + ' ' + last.ini) : '');
+      if (last && last.res === NC) d.classList.add('ncl');
       x.style.cssText = 'width:62px;text-align:center;font-weight:700;font-size:7px'; d.append(x); col.append(d);
     }
   });
@@ -761,15 +813,17 @@ function imprimer(y, m) {
   blocsPrint(D.cat.M).forEach(function (r) {
     if (r.head || r.pre) k++;
     var d = el('div', 'l'); d.style.background = k % 2 ? '#c5e0b4' : '#e2f0d9'; d.style.padding = '0';
-    var last = r.task ? lignes(r.task.code, Mc[0].p).slice(-1)[0] : null;
-    var dd = el('span', last && last.res !== 'OK' ? 'ko' : '', last ? (last.res === 'OK' ? '' : '✗ ') + fr(last.d) + ' ' + last.ini + (last.rel ? ' · ' + last.rel : '') : '');
+    var last = r.task ? (lignes(r.task.code, Mc[0].p).slice(-1)[0] || ncAvant(r.task.code, Mc[0].p)) : null;
+    var dd = el('span', last && last.res === NC ? 'nc' : last && last.res !== 'OK' ? 'ko' : '', last ? (last.res === NC ? 'N/C' : (last.res === 'OK' ? '' : '✗ ') + fr(last.d) + ' ' + last.ini + (last.rel ? ' · ' + last.rel : '')) : '');
+    if (last && last.res === NC) d.classList.add('ncl');
     dd.style.cssText = 'width:62px;text-align:center;font-size:7px;font-weight:700'; d.append(dd);
     var t = el('span', 't'); t.style.paddingLeft = '6px';
     if (r.head) t.append(el('b', '', r.head)); else { if (r.pre) t.append(el('b', '', r.pre)); t.append(document.createTextNode(r.label)); }
     d.append(t); R.append(d);
   });
   var aj = etatAire(ym), la = el('div', 'l'); la.style.cssText = 'background:#70ad47;color:#fff;margin-top:4px;font-weight:700';
-  la.append(el('span', 't', 'Aire de jeux · contrôle mensuel (22 points) : ' + (aj.fait ? 'fait le ' + fr(aj.d) + ' par ' + aj.ini + ' · ' + aj.ok + ' / 22 OK' : 'pas fait')));
+  la.append(el('span', 't', 'Aire de jeux · contrôle mensuel (22 points) : ' + (aj.nc ? 'non concerné' : aj.fait ? 'fait le ' + fr(aj.d) + ' par ' + aj.ini + ' · ' + aj.ok + ' / 22 OK' : 'pas fait')));
+  if (aj.nc) { la.classList.add('ncl'); la.style.background = '#a9a9a9'; }
   R.append(la);
   cols.append(L, R); pg.append(cols); P.append(pg);
   setTimeout(function () { window.print(); }, 150);

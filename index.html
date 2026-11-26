@@ -161,13 +161,14 @@
   // SMEP : tâches de la semaine restantes, points non OK, aire de jeux, récurrentes du mois
   BR.charge('smep', 'getData', function (D) {
     var bon = function (r) { return r.res === 'OK' || r.st === 'Corrigé'; };
-    var restant = D.cat.H.filter(function (t) { return !D.rows.some(function (r) { return r.code === t.code && r.p === wk && bon(r); }); }).length;
+    var nc = function (code, per) { var L = D.rows.filter(function (r) { return r.code === code && r.p <= per; }).sort(function (a, b) { return a.p === b.p ? (a.ts < b.ts ? -1 : 1) : (a.p < b.p ? -1 : 1); }); var l = L[L.length - 1]; return !!(l && l.res === 'Non concerné'); };
+    var restant = D.cat.H.filter(function (t) { return !nc(t.code, wk) && !D.rows.some(function (r) { return r.code === t.code && r.p === wk && bon(r); }); }).length;
     var ko = D.rows.filter(function (r) { return r.res === 'Pas OK' && r.st !== 'Corrigé'; });
     document.getElementById('s-sem').textContent = restant;
     document.getElementById('s-ko').textContent = ko.length;
     var R = ko.slice(-3).reverse().map(function (r) { return { t: r.app + ' : ' + r.t + ' — ' + (r.st || 'à traiter'), src: 'SMEP', h: 'smep.html' }; });
-    if (!D.rows.some(function (r) { return r.f === 'Aire de jeux (mensuel)' && r.p === ym; })) R.push({ t: 'Aire de jeux : contrôle mensuel pas encore fait', src: 'SMEP', h: 'smep.html' });
-    var m = now.getMonth() + 1, rec = D.rec.filter(function (r) { return r.mois.indexOf(m) >= 0 && !D.rows.some(function (x) { return x.code === r.code && x.p === ym && bon(x); }); });
+    if (!D.rows.some(function (r) { return r.f === 'Aire de jeux (mensuel)' && r.p === ym; }) && !(D.cat.A.length && D.cat.A.every(function (p) { return nc(p.code, ym); }))) R.push({ t: 'Aire de jeux : contrôle mensuel pas encore fait', src: 'SMEP', h: 'smep.html' });
+    var m = now.getMonth() + 1, rec = D.rec.filter(function (r) { return r.mois.indexOf(m) >= 0 && !nc(r.code, ym) && !D.rows.some(function (x) { return x.code === r.code && x.p === ym && bon(x); }); });
     if (rec.length) R.push({ t: rec.length + ' tâche' + (rec.length > 1 ? 's' : '') + ' récurrente' + (rec.length > 1 ? 's' : '') + ' prévue' + (rec.length > 1 ? 's' : '') + ' ce mois', src: 'SMEP', h: 'smep.html' });
     REM.smep = R; rendreRem();
   }).catch(function (e) { document.getElementById('s-sem').textContent = '?'; REM.smep = [{ t: 'SMEP : ' + e.message, src: 'SMEP', h: 'smep.html' }]; rendreRem(); });

@@ -65,6 +65,7 @@
   .minis { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
   .mini { aspect-ratio:1 / 1; gap:8px; border:3px solid var(--ink); border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; cursor:pointer; text-align:left; font:inherit; color:inherit; }
   .mini:active { transform:scale(.98); }
+  a.mini { text-decoration:none; }
   .mini { min-width:0; }
   .minis { grid-template-columns:repeat(auto-fill, minmax(170px, 190px)); }
   .mini .lg { display:flex; flex-direction:column; align-items:flex-start; gap:6px; font-family:Oswald, sans-serif; font-weight:700; font-size:19px; line-height:1.1; text-transform:uppercase; max-width:100%; }
@@ -120,6 +121,10 @@
       <div class="lg"><em>Uber</em> Réclamations</div>
       <div><b class="r" id="u-n">–</b><br><span id="u-sous">à contester</span></div>
     </button>
+    <a class="mini" href="http://10.97.57.79:53521/fr/Dashboard/Login" target="_blank" rel="noopener" title="Gestion des ruptures sur les bornes (fonctionne sur le wifi du restaurant)">
+      <div class="lg"><em>Rupture</em> Borne</div>
+      <div><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#e4002b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6"/><circle cx="12" cy="17" r="1.2"/></svg><br><span>Ouvrir le back-office des bornes ›</span></div>
+    </a>
   </div>
   <div class="ov" id="ov-uber" hidden><div class="pn" role="dialog" aria-label="Réclamations Uber à contester">
     <div class="hd"><b>Uber · commandes à refaire</b><button type="button" id="ov-x" aria-label="Fermer">×</button></div>

@@ -65,7 +65,7 @@
   .msgs { background:#fff; border:3px solid var(--ink); border-radius:22px; overflow:hidden; }
   .msgs .mh { background:var(--ink); color:#fff; font-family:Oswald, sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:15px; padding:8px 18px; }
   .msgs .m { padding:12px 18px; font-size:18px; line-height:1.35; border-top:1px solid var(--line); white-space:pre-wrap; }
-  .msgs .mh + .m { border-top:0; }
+  .msgs .m:first-child { border-top:0; }
   .msgs .m.imp { background:#fdebee; color:#8a0016; font-weight:700; border-left:8px solid var(--red); }
   .msgs .m.imp::before { content:"⚠ "; }
   .minis { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
@@ -200,7 +200,7 @@
     var tj = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), wd = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'][now.getDay()], mb = document.getElementById('msgs');
     var M = (I && I.msgs || []).filter(function (m) { return m.du <= tj && tj <= m.au && (!m.j || !m.j.length || m.j.indexOf(wd) >= 0); }).sort(function (a, b) { return (b.imp ? 1 : 0) - (a.imp ? 1 : 0); });
     mb.innerHTML = ''; mb.hidden = !M.length;
-    if (M.length) { mb.append(el('div', 'mh', 'Message' + (M.length > 1 ? 's' : '') + ' du directeur')); M.forEach(function (m) { mb.append(el('div', 'm' + (m.imp ? ' imp' : ''), m.t)); }); }
+    if (M.length) { M.forEach(function (m) { mb.append(el('div', 'm' + (m.imp ? ' imp' : ''), m.t)); }); }
     var t = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), box = document.getElementById('ca');
     var C = I && I.ca && I.ca.date === t ? I.ca : null; box.innerHTML = ''; box.hidden = !C;
     if (C) {

@@ -89,6 +89,11 @@
   .cd ul { margin:0; padding:10px 12px 12px 30px; font-size:16px; line-height:1.35; }
   .cd .k { font-size:12px; color:var(--mut); padding:0 12px 10px; }
   .cd .k.urg { color:var(--red); font-weight:700; }
+  .cd { cursor:pointer; position:relative; }
+  .cd:active { transform:scale(.985); }
+  .cd .ph { display:flex; align-items:center; gap:8px; margin:0 12px 12px; padding:9px 12px; border-radius:12px; background:var(--ink); color:#fff; font-weight:700; font-size:15px; }
+  .cd .ph.ok { background:#137a37; } .cd .ph.att { background:#777; } .cd .ph.err { background:var(--red); }
+  .cd .ph svg { flex:none; }
   .ov .vide { padding:30px; text-align:center; color:var(--mut); }
   @media (max-width:600px) { .ca .big b { font-size:40px; } .ca .hi { border-left:0; padding-left:0; } .minis { grid-template-columns:1fr 1fr; } .mini { padding:12px; } .mini b { font-size:40px; } .mini span { font-size:13px; } .top { height:180px; } .logo { width:120px; height:120px; } .logo img { width:90px; height:90px; } .nums { display:none; } .tx b { font-size:28px; } .ic { width:64px; height:64px; } }
 </style>
@@ -129,6 +134,7 @@
   <div class="ov" id="ov-uber" hidden><div class="pn" role="dialog" aria-label="Réclamations Uber à contester">
     <div class="hd"><b>Uber · commandes à refaire</b><button type="button" id="ov-x" aria-label="Fermer">×</button></div>
     <div class="sb" id="ov-sb"></div><div class="cards" id="ov-cards"></div>
+    <input type="file" id="ov-cam" accept="image/*" capture="environment" hidden>
   </div></div>
   <div class="foot">
     <span>Astuce : Partager › « Sur l'écran d'accueil » pour l'ouvrir comme une application.</span>
@@ -203,7 +209,7 @@
     var tot = R.reduce(function (a, r) { return a + (r.m || 0); }, 0);
     document.getElementById('u-n').textContent = R.length;
     document.getElementById('u-sous').textContent = R.length ? 'à contester · ' + tot.toFixed(2).replace('.', ',') + ' € retenus' : 'rien à contester';
-    document.getElementById('ov-sb').textContent = I && I.maj ? 'Liste envoyée par le TDB le ' + I.maj + (I.recla && I.recla.releve ? ' · relevé Uber du ' + I.recla.releve.split('-').reverse().join('/') : '') + '. La plus ancienne en premier : à refaire, photographier, contester.' : '';
+    document.getElementById('ov-sb').textContent = I && I.maj ? 'Liste envoyée par le TDB le ' + I.maj + (I.recla && I.recla.releve ? ' · relevé Uber du ' + I.recla.releve.split('-').reverse().join('/') : '') + '. La plus ancienne en premier. Touche une commande pour la photographier : la photo part dans le Drive (Réclamation UBER) avec le n° de commande.' : '';
   }
   function ouvrirUber() {
     var c = document.getElementById('ov-cards'), j0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()); c.innerHTML = '';
@@ -214,10 +220,27 @@
       var ul = el('ul'); [].concat(r.b || []).forEach(function (x) { ul.append(el('li', '', x)); });
       var lim = new Date(+d[0], +d[1] - 1, +d[2] + 30), rest = Math.round((lim - j0) / 864e5);
       cd.append(h, ul, el('div', 'k' + (rest <= 5 ? ' urg' : ''), (r.k ? r.k + ' · ' : '') + (rest <= 0 ? 'dernier jour pour contester' : 'encore ' + rest + ' jour' + (rest > 1 ? 's' : '') + ' pour contester')));
+      var ph = el('div', 'ph'); cd.append(ph); majPh(ph, r.id); cd.onclick = function () { photo(r.id, ph); };
       c.append(cd);
     });
     document.getElementById('ov-uber').hidden = false; document.body.style.overflow = 'hidden';
   }
+  // Photo d'une commande refaite : appareil photo → réduite à 1600 px → script CLO LENBOR → Drive « Réclamation UBER » (titre = n° de commande)
+  var CAM = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  function nbPh(id) { try { return (JSON.parse(localStorage.getItem('br_photos') || '{}'))[id] || 0; } catch (e) { return 0; } }
+  function addPh(id) { try { var o = JSON.parse(localStorage.getItem('br_photos') || '{}'); o[id] = (o[id] || 0) + 1; localStorage.setItem('br_photos', JSON.stringify(o)); } catch (e) {} }
+  function majPh(ph, id, etat, txt) { var n = nbPh(id); ph.className = 'ph' + (etat ? ' ' + etat : n ? ' ok' : '');
+    ph.innerHTML = CAM; ph.append(document.createTextNode(txt || (n ? n + ' photo' + (n > 1 ? 's' : '') + ' enregistrée' + (n > 1 ? 's' : '') + ' · en reprendre une' : 'Prendre la photo'))); }
+  function reduire(f) { return new Promise(function (ok, ko) { var u = URL.createObjectURL(f), im = new Image();
+    im.onload = function () { var k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL('image/jpeg', 0.82)); };
+    im.onerror = function () { URL.revokeObjectURL(u); ko(new Error('photo illisible')); }; im.src = u; }); }
+  function photo(id, ph) { if (ph.classList.contains('att')) return; var inp = document.getElementById('ov-cam'); inp.value = '';
+    inp.onchange = function () { var f = inp.files && inp.files[0]; if (!f) return; majPh(ph, id, 'att', 'Envoi de la photo…');
+      reduire(f).then(function (data) { return BR.srv('formation', 'enregistrerPhoto', { id: id, data: data }); })
+        .then(function (r) { addPh(id); majPh(ph, id, 'ok', '✓ ' + (r && r.nom ? r.nom : 'Photo') + ' enregistrée dans le Drive'); setTimeout(function () { majPh(ph, id); }, 4000); })
+        .catch(function (e) { majPh(ph, id, 'err', /Fonction inconnue/.test(e.message) ? 'Script CLO LENBOR à mettre à jour (photos)' : 'Pas enregistrée : ' + e.message + ' — touche pour réessayer'); }); };
+    inp.click(); }
   function fermerUber() { document.getElementById('ov-uber').hidden = true; document.body.style.overflow = ''; }
   document.getElementById('ca').onclick = function () { OUV = !OUV; rendreInfos(INF); };
   document.getElementById('uber').onclick = ouvrirUber; document.getElementById('ov-x').onclick = fermerUber;

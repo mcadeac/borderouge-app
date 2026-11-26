@@ -37,6 +37,12 @@
   .ln .h { font-variant-numeric:tabular-nums; font-size:15px; }
   .ln .h i { font-style:normal; font-size:11px; font-weight:700; text-transform:uppercase; background:#fff3d6; color:#7a4d00; border-radius:6px; padding:1px 6px; margin-right:4px; }
   .ln.off { opacity:.42; }
+  .ln .n.cl { cursor:pointer; text-decoration:underline dotted; text-underline-offset:4px; }
+  .ln .n.cl::after { content:" ☎"; font-size:13px; color:var(--red); text-decoration:none; }
+  .ln .tel { grid-column:1 / -1; display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff3f5; border-radius:10px; padding:8px 12px; }
+  .ln .tel a { font-family:Oswald, sans-serif; font-weight:700; font-size:26px; color:var(--red); text-decoration:none; letter-spacing:1px; }
+  .ln .tel span { font-size:13px; color:#5c5c5c; }
+
   .ln.on .n::before { content:""; display:inline-block; width:9px; height:9px; border-radius:50%; background:#137a37; margin-right:7px; vertical-align:1px; }
   .tl { position:relative; height:16px; background:#f0f0f0; border-radius:8px; }
   .tl span { position:absolute; top:0; bottom:0; background:var(--red); border-radius:8px; }
@@ -86,7 +92,7 @@
 (function () {
   var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
   var MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-  var T0 = 8 * 60, T1 = 26 * 60, D = null, SEL = null;
+  var T0 = 8 * 60, T1 = 26 * 60, D = null, SEL = null, TELO = null;
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function auj() { return iso(new Date(Date.now() - 5 * 3600000)); } // après minuit, on reste sur la journée de la veille jusqu'à 5 h
@@ -105,18 +111,21 @@
     dates.sort(); if (dates.indexOf(t) < 0) dates.unshift(t);
     if (!SEL || dates.indexOf(SEL) < 0) SEL = t;
     var box = document.getElementById('tabs'); box.innerHTML = '';
-    dates.slice(0, 7).forEach(function (d) { var b = el('button', '', labJour(d)); b.type = 'button'; b.setAttribute('aria-selected', String(d === SEL)); b.onclick = function () { SEL = d; onglets(); rendre(); notes(); }; box.append(b); });
+    dates.slice(0, 7).forEach(function (d) { var b = el('button', '', labJour(d)); b.type = 'button'; b.setAttribute('aria-selected', String(d === SEL)); b.onclick = function () { SEL = d; TELO = null; onglets(); rendre(); notes(); }; box.append(b); });
   }
 
   function ligne(r, isT, nm) {
     var S = segs(r.h), syn = r.statut === 'Synergy', pres = isT && !syn && S.some(function (s) { return nm >= s[0] && nm < s[1]; });
     var ln = el('div', 'ln' + (isT ? (pres ? ' on' : ' off') : ''));
-    ln.append(el('div', 'n', r.nom));
+    var nm0 = el('div', 'n', r.nom); ln.append(nm0);
+    if (isT && r.tel) { nm0.classList.add('cl'); nm0.title = 'Voir le numéro'; ln.onclick = function () { TELO = TELO === r.nom ? null : r.nom; rendre(); }; }
     var h = el('div', 'h'); if (syn) h.append(el('i', '', 'Synergy')); h.append(hTxt(r.h)); ln.append(h);
     var tl = el('div', 'tl');
     S.forEach(function (s) { var sp = el('span', r.type === 'enca' ? 'e' : syn ? 's' : ''); var x0 = Math.max(0, (s[0] - T0) / (T1 - T0)), x1 = Math.min(1, (s[1] - T0) / (T1 - T0)); sp.style.left = (x0 * 100) + '%'; sp.style.width = (Math.max(.01, x1 - x0) * 100) + '%'; if (r.type !== 'enca' && s[1] - s[0] > 300) { sp.append(el('b', '', '//')); sp.title = 'Pause de 30 min (shift de plus de 5 h)'; } tl.append(sp); });
     if (isT && nm >= T0 && nm <= T1) { var n = el('i', 'now'); n.style.left = ((nm - T0) / (T1 - T0) * 100) + '%'; tl.append(n); }
     ln.append(tl);
+    if (isT && r.tel && TELO === r.nom) { var tz = el('div', 'tel'), a = el('a', '', (function (t) { var d = t.replace(/\D/g, ''); return d.length === 10 ? d.replace(/(\d\d)(?=\d)/g, '$1 ') : t; })(r.tel)); a.href = 'tel:' + r.tel.replace(/[^\d+]/g, ''); a.onclick = function (e) { e.stopPropagation(); };
+      tz.append(a, el('span', '', 'Touche le numéro pour appeler')); ln.append(tz); ln.classList.remove('off'); }
     return { ln: ln, pres: pres };
   }
 

@@ -42,6 +42,16 @@
   .rem a { color:#fff; text-decoration:none; font-size:16px; display:flex; gap:10px; justify-content:space-between; }
   .rem a i { font-style:normal; font-size:12px; font-weight:700; background:rgba(255,255,255,.2); border-radius:8px; padding:2px 7px; align-self:center; text-transform:uppercase; flex:none; }
   .rem .vide { opacity:.9; font-size:16px; }
+  .hc { background:#fff; border:3px solid var(--ink); border-radius:22px; padding:16px 18px 18px; }
+  .hc h2 { margin:0; font-family:Oswald, sans-serif; font-weight:700; font-size:22px; text-transform:uppercase; letter-spacing:1px; }
+  .hc-s { font-size:14px; color:var(--mut); margin:2px 0 12px; }
+  .hc-g { display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; }
+  .hc-p { border-radius:14px; background:#f6f6f6; border-top:8px solid var(--c); padding:10px 8px 12px; text-align:center; }
+  .hc-p span { display:block; font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#444; }
+  .hc-p b { display:block; font-family:Oswald, sans-serif; font-weight:700; font-size:44px; line-height:1.05; color:var(--ink); }
+  .hc-p em { display:block; font-style:normal; font-size:13px; color:#444; font-weight:700; }
+  .hc-p small { display:block; font-size:11.5px; color:var(--mut); }
+  @media (max-width:600px) { .hc-g { grid-template-columns:repeat(3, 1fr); } .hc-p b { font-size:36px; } }
   .foot { color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
   .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
   .ca { background:var(--ink); color:#fff; border-radius:22px; padding:16px 22px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
@@ -127,7 +137,7 @@
     <div class="tx"><b>Planning</b><span id="p-sous">Équipe du jour et des 6 prochains jours</span></div>
     <div class="nums"><div><b id="p-tot">–</b><span>au planning</span></div><div class="r"><b id="p-now">–</b><span>sur le terrain</span></div></div>
   </a>
-  <section class="rem" aria-live="polite"><h2>À ne pas oublier</h2><div id="rem"><div class="vide">Chargement…</div></div></section>
+  <section class="hc" id="hc" aria-live="polite"><h2>À avoir en HC</h2><div class="hc-s" id="hc-s">Chargement…</div><div class="hc-g" id="hc-g"></div></section>
   <div class="minis">
     <button type="button" class="mini" id="uber" title="Commandes Uber à refaire et photographier pour contester">
       <div class="lg"><em>Uber</em> Réclamations</div>
@@ -164,7 +174,7 @@
   var REM = { smep: [], formation: [] };
   function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
   function rendreRem() {
-    var box = document.getElementById('rem'); box.innerHTML = '';
+    var box = document.getElementById('rem'); if (!box) return; box.innerHTML = '';
     var L = REM.smep.concat(REM.formation);
     if (!L.length) { box.append(el('div', 'vide', 'Rien de particulier.')); return; }
     L.slice(0, 6).forEach(function (r) { var a = el('a'); a.href = r.h; a.append(el('span', '', '• ' + r.t), el('i', '', r.src)); box.append(a); });
@@ -198,8 +208,29 @@
   // CA du jour et réclamations Uber (envoyés par le TDB dans l'onglet « Infos app »)
   var EUR = function (v) { return Math.round(v).toLocaleString('fr-FR') + ' €'; }, PCT = function (a, b) { var p = (a / b - 1) * 100; return (p >= 0 ? '+' : '−') + Math.abs(p).toFixed(1).replace('.', ',') + ' %'; };
   var UB = [], OUV = false, INF = null;
+  // Quantités à avoir en HC pour tenir 1 h 30 (TDB : conso /1000 par segment × CA du segment, moyenne des 3 derniers mêmes jours, ramenée au CA prévu)
+  var HCP = [['tenders', 'Tenders', '#b5763a', 36], ['wings', 'Hot Wings', '#ffd23f', 60], ['filetOR', 'Filet OR', '#3d8bff', 0], ['zinger', 'Zinger', '#ff4d6d', 0], ['mini', 'Mini filet', '#b26bff', 0]];
+  function rendreHC() {
+    var I = INF, sec = document.getElementById('hc'), sub = document.getElementById('hc-s'), g = document.getElementById('hc-g');
+    var d = new Date(), tj = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()), H = I && I.hc;
+    var m = d.getHours() * 60 + d.getMinutes(); if (d.getHours() < 5) { m += 1440; var y = new Date(d); y.setDate(y.getDate() - 1); tj = y.getFullYear() + '-' + pad(y.getMonth() + 1) + '-' + pad(y.getDate()); }
+    g.innerHTML = '';
+    if (!H || H.date !== tj || !H.segs) { sub.textContent = 'Pas encore de données pour aujourd’hui (envoyées par le TDB).'; return; }
+    var fin = H.segs[H.segs.length - 1].b;
+    if (m >= fin) { sub.textContent = 'Restaurant fermé.'; return; }
+    var w0 = Math.max(m, H.segs[0].a), w1 = w0 + 90, hm = function (x) { x = x % 1440; return Math.floor(x / 60) + 'h' + pad(x % 60); };
+    sub.textContent = (m < H.segs[0].a ? 'Pour l’ouverture : de ' : 'Pour tenir 1 h 30 : de ') + hm(w0) + ' à ' + hm(Math.min(w1, fin)) + ' · ' + (H.src.length > 1 ? 'moyenne des ' + H.src.length + ' derniers ' + ['dimanches', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis'][d.getHours() < 5 ? (d.getDay() + 6) % 7 : d.getDay()] : 'même jour la semaine dernière') + ', ramené au CA prévu';
+    HCP.forEach(function (p) {
+      var q = 0; H.segs.forEach(function (s) { var o = Math.min(s.b, w1) - Math.max(s.a, w0); if (o > 0) q += (s.q[p[0]] || 0) * o / (s.b - s.a); });
+      var c = el('div', 'hc-p'); c.style.setProperty('--c', p[2]); c.append(el('span', '', p[1]));
+      if (p[3]) { var sacs = Math.ceil(q / p[3] * 10) / 10; c.append(el('b', '', String(sacs).replace('.', ',')), el('em', '', sacs > 1 ? 'sacs' : 'sac'), el('small', '', '≈ ' + Math.ceil(q) + ' pcs')); }
+      else c.append(el('b', '', Math.ceil(q)), el('em', '', 'pcs'));
+      g.append(c);
+    });
+  }
+  setInterval(rendreHC, 60000);
   function rendreInfos(I) {
-    INF = I;
+    INF = I; rendreHC();
     // messages du directeur (encart « Messages pour l'app » de l'accueil du TDB) : ceux du jour
     var tj = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()), wd = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'][now.getDay()], mb = document.getElementById('msgs');
     var M = (I && I.msgs || []).filter(function (m) { return m.du <= tj && tj <= m.au && (!m.j || !m.j.length || m.j.indexOf(wd) >= 0); }).sort(function (a, b) { return (b.imp ? 1 : 0) - (a.imp ? 1 : 0); });
@@ -276,7 +307,7 @@
     document.getElementById('p-tot').textContent = J.length; document.getElementById('p-now').textContent = sur.length;
     var E = J.filter(function (r) { return r.type === 'enca'; }).map(function (r) { return r.nom; });
     if (E.length) document.getElementById('p-sous').textContent = 'Encadrants : ' + E.join(', ');
-  }).catch(function () { document.getElementById('p-tot').textContent = '?'; });
+  }).catch(function () { document.getElementById('p-tot').textContent = '?'; if (!INF) document.getElementById('hc-s').textContent = 'Données indisponibles pour le moment.'; });
 })();
 </script>
 </body>

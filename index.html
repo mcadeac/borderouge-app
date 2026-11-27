@@ -226,7 +226,9 @@
       var c = el('div', 'hc-p'); c.style.setProperty('--c', p[2]); c.append(el('span', '', p[1]));
       if (p[3]) { var sacs = Math.ceil(q / p[3] * 10) / 10; c.append(el('b', '', String(sacs).replace('.', ',')), el('em', '', sacs > 1 ? 'sacs' : 'sac'), el('small', '', '≈ ' + Math.ceil(q) + ' pcs')); }
       else c.append(el('b', '', Math.ceil(q)), el('em', '', 'pcs'));
-      var G = H.garde && H.garde[p[0]]; if (G) { var z = el('small', 'gf', 'conso des 6 derniers jours'); z.title = 'Garde-fou : ' + String(G.jours).replace('.', ',') + ' pour 1000 € sur les mêmes jours, soit plus de 15 % au-dessus des 6 derniers jours (' + String(G.six).replace('.', ',') + ') : la conso des 6 derniers jours est utilisée.'; c.append(z); }
+      var G = H.garde && H.garde[p[0]]; if (G) { var fr2 = function (x) { return String(x).replace('.', ','); }, ex = G.exclu ? G.exclu.slice(8) + '/' + G.exclu.slice(5, 7) : '';
+        var z = el('small', 'gf', G.mode === 'mardis' ? '2 mardis sur 3 (' + ex + ' écarté)' : 'conso des 6 derniers jours (hors mardis)');
+        z.title = G.mode === 'mardis' ? 'Garde-fou : le mardi ' + ex + ' (' + fr2(G.jours) + ' pour 1000 €) dépasse de plus de 15 % la moyenne des 2 autres mardis (' + fr2(G.autres) + ') : il n’est pas pris en compte.' : 'Garde-fou : ' + fr2(G.jours) + ' pour 1000 € sur les mêmes jours, soit plus de 15 % au-dessus des 6 derniers jours hors mardis (' + fr2(G.six) + ') : la conso des 6 derniers jours est utilisée.'; c.append(z); }
       g.append(c);
     });
   }

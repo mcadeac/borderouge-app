@@ -51,6 +51,7 @@
   .hc-p b { display:block; font-family:Oswald, sans-serif; font-weight:700; font-size:44px; line-height:1.05; color:var(--ink); }
   .hc-p em { display:block; font-style:normal; font-size:13px; color:#444; font-weight:700; }
   .hc-p small { display:block; font-size:11.5px; color:var(--mut); }
+  .hc-p small.gf { margin-top:4px; color:#8a5a00; font-weight:700; }
   @media (max-width:600px) { .hc-g { grid-template-columns:repeat(3, 1fr); } .hc-p b { font-size:36px; } }
   .foot { color:var(--mut); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
   .foot button { font:inherit; font-size:14px; background:none; border:0; color:var(--mut); text-decoration:underline; padding:0; }
@@ -225,6 +226,7 @@
       var c = el('div', 'hc-p'); c.style.setProperty('--c', p[2]); c.append(el('span', '', p[1]));
       if (p[3]) { var sacs = Math.ceil(q / p[3] * 10) / 10; c.append(el('b', '', String(sacs).replace('.', ',')), el('em', '', sacs > 1 ? 'sacs' : 'sac'), el('small', '', '≈ ' + Math.ceil(q) + ' pcs')); }
       else c.append(el('b', '', Math.ceil(q)), el('em', '', 'pcs'));
+      var G = H.garde && H.garde[p[0]]; if (G) { var z = el('small', 'gf', 'conso des 6 derniers jours'); z.title = 'Garde-fou : ' + String(G.jours).replace('.', ',') + ' pour 1000 € sur les mêmes jours, soit plus de 15 % au-dessus des 6 derniers jours (' + String(G.six).replace('.', ',') + ') : la conso des 6 derniers jours est utilisée.'; c.append(z); }
       g.append(c);
     });
   }
